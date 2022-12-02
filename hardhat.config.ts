@@ -1,16 +1,12 @@
 import "@nomicfoundation/hardhat-toolbox";
 import "@nomiclabs/hardhat-ethers";
 import "@openzeppelin/hardhat-upgrades";
-// import { TOKENS } from "constants/addresses";
 import { config as dotenvConfig } from "dotenv";
 import "hardhat-deploy";
 import type { HardhatUserConfig } from "hardhat/config";
 import type { NetworkUserConfig } from "hardhat/types";
 import { resolve } from "path";
 import "tsconfig-paths/register";
-
-// import { NetworkInitialData } from "types/common";
-import "./tasks";
 
 const dotenvConfigPath: string = process.env.DOTENV_CONFIG_PATH || "./.env";
 dotenvConfig({ path: resolve(__dirname, dotenvConfigPath) });
@@ -66,13 +62,7 @@ const config: HardhatUserConfig = {
       },
       chainId: chainIds.hardhat,
     },
-    polygon: {
-      ...getChainConfig("polygon-mainnet"),
-    },
-    // mumbai: {
-    //   ...getChainConfig("polygon-mumbai"),
-    //   initialDate: { usdtTokenAddress: TOKENS.USDT.mumbai } as NetworkInitialData as any,
-    // },
+    polygon: getChainConfig("polygon-mainnet"),
     mumbai: getChainConfig("polygon-mumbai"),
   },
   paths: {

@@ -28,6 +28,7 @@ contract CarBarContract is
     IERC20 private _usdtToken;
 
     uint8 public constant TOKEN_UNIT = 1;
+    uint32 public constant TIME_GAP = 72 * 3600;
 
     using CountersUpgradeable for CountersUpgradeable.Counter;
 
@@ -62,42 +63,44 @@ contract CarBarContract is
         uint256 expiryDate
     );
 
+    modifier onlyActualCollection(uint32 collectionId) {
+        CollectionItem memory collection = fetchCollection(collectionId);
+
+        require(
+            block.timestamp <= collection.expiryDate,
+            "Collection expiration must be greater than the current time"
+        );
+
+        _;
+    }
+
+    modifier onlyActualToken(
+        uint32 collectionId,
+        uint32 tokenId,
+        uint32 timeOffset
+    ) {
+        TokenItem memory token = fetchToken(collectionId, tokenId);
+
+        if (token.expiryDate > 0) {
+            require(
+                block.timestamp <= token.expiryDate - timeOffset,
+                "Token expiration must be more than a certain period from the current time"
+            );
+        }
+
+        _;
+    }
+
     event TokenSold(uint32 indexed collectionId, uint32 indexed tokenId, address seller, address owner, uint256 price);
 
     function _authorizeUpgrade(address newImplementation) internal override onlyOwner {}
 
-    function setURI(string memory newuri) public onlyOwner {
+    function setURI(string memory newuri) external onlyOwner {
         _setURI(newuri);
     }
 
     function getUSDTaddress() external view returns (address) {
         return address(_usdtToken);
-    }
-
-    // TODO: Temp function for testing. It should remove in PROD
-    function initCollections(uint32 tokenCount) public onlyOwner {
-        uint32 expiryDate = 1703980800;
-        createCollection(
-            "Tesla Model 3 Stnd (1 Day)",
-            "https://carbar.io/nft/Tesla_Model_3_Stnd.png",
-            tokenCount,
-            160000000000000000000,
-            expiryDate
-        );
-        createCollection(
-            "Tesla Model 3 Prfm (1 Day)",
-            "https://carbar.io/nft/Tesla_Model_3_Prfm.png",
-            tokenCount,
-            100000000000000000000,
-            expiryDate
-        );
-        createCollection(
-            "Tesla Model Y (1 Day)",
-            "https://carbar.io/nft/Tesla_Y.png",
-            tokenCount,
-            160000000000000000000,
-            expiryDate
-        );
     }
 
     function createCollection(
@@ -106,11 +109,11 @@ contract CarBarContract is
         uint32 tokenCount,
         uint256 price,
         uint32 expiryDate
-    ) public onlyOwner returns (uint32) {
+    ) external onlyOwner returns (uint32) {
         uint32 collectionId = uint32(_collectionCounter.current());
         _mint(_msgSender(), collectionId, tokenCount * TOKEN_UNIT, "");
         createCollectionItem(collectionId, name, url, tokenCount, price, expiryDate);
-        createItemTokens(collectionId, tokenCount);
+        _createItemTokens(collectionId, tokenCount);
         _collectionCounter.increment();
         return collectionId;
     }
@@ -119,7 +122,7 @@ contract CarBarContract is
         uint32 collectionId,
         string memory name,
         string memory url
-    ) public onlyOwner returns (CollectionItem memory) {
+    ) external onlyOwner returns (CollectionItem memory) {
         CollectionItem memory collection = fetchCollection(collectionId);
         collection.name = name;
         collection.url = url;
@@ -152,7 +155,7 @@ contract CarBarContract is
         return uint32(_collectionCounter.current());
     }
 
-    function createItemTokens(uint32 collectionId, uint32 tokenCount) private {
+    function _createItemTokens(uint32 collectionId, uint32 tokenCount) private {
         address owner = _msgSender();
         uint32 expiryDate = 0;
         bool sold = false;
@@ -161,29 +164,42 @@ contract CarBarContract is
         }
     }
 
-    function createTokenItem(uint32 collectionId, uint32 tokenId, address owner, uint32 expiryDate, bool sold) private {
-        _tokenItems[collectionId][tokenId] = TokenItem(tokenId, owner, expiryDate, sold);
+    function createTokenItem(
+        uint32 collectionId,
+        uint32 tokenId,
+        address owner,
+        uint32 expiryDate,
+        bool sold
+    ) private returns (TokenItem memory) {
+        TokenItem memory token = TokenItem(tokenId, owner, expiryDate, sold);
+        _tokenItems[collectionId][tokenId] = token;
+        return token;
     }
 
-    function buyToken(uint32 collectionId, uint256 amount) public nonReentrant {
+    function updateToken(
+        uint32 collectionId,
+        uint32 tokenId,
+        uint32 expiryDate
+    ) external onlyOwner returns (TokenItem memory) {
+        TokenItem memory token = fetchToken(collectionId, tokenId);
+        token.expiryDate = expiryDate;
+        return createTokenItem(collectionId, token.tokenId, token.owner, token.expiryDate, token.sold);
+    }
+
+    function buyToken(uint32 collectionId) external nonReentrant onlyActualCollection(collectionId) {
         CollectionItem memory collection = fetchCollection(collectionId);
+        uint256 amount = collection.price;
         address owner = address(owner());
         address sender = _msgSender();
 
-        require(collection.price == amount, "Price should be correct to NFT collection");
-        require(_usdtToken.allowance(sender, address(this)) >= amount, "User must allow the use of funds");
+        require(_usdtToken.allowance(sender, address(this)) >= amount, "User must allow to use of funds");
         require(balanceOf(owner, collectionId) >= 1, "The collection must have at least 1 available token");
-
-        _safeTransferFrom(owner, sender, collectionId, TOKEN_UNIT, "");
 
         CountersUpgradeable.Counter storage counter = _collectionCounters[collectionId];
 
         uint32 tokenId = uint32(counter.current());
 
-        TokenItem memory token = fetchToken(collectionId, tokenId);
-        token.owner = sender;
-        token.sold = true;
-        createTokenItem(collectionId, token.tokenId, token.owner, token.expiryDate, token.sold);
+        _transfer(sender, collectionId, tokenId);
 
         counter.increment();
 
@@ -192,7 +208,41 @@ contract CarBarContract is
         emit TokenSold(collectionId, tokenId, owner, sender, amount);
     }
 
-    function withdraw(address to, uint256 amount) public onlyOwner nonReentrant {
+    function _transfer(address to, uint32 collectionId, uint32 tokenId) private returns (TokenItem memory) {
+        TokenItem memory token = fetchToken(collectionId, tokenId);
+        address oldOwner = token.owner;
+        token.owner = to;
+        token.sold = true;
+        TokenItem memory newToken = createTokenItem(
+            collectionId,
+            token.tokenId,
+            token.owner,
+            token.expiryDate,
+            token.sold
+        );
+        _safeTransferFrom(oldOwner, to, collectionId, TOKEN_UNIT, "");
+        return newToken;
+    }
+
+    function transfer(
+        address to,
+        uint32 collectionId,
+        uint32 tokenId
+    )
+        external
+        onlyActualCollection(collectionId)
+        onlyActualToken(collectionId, tokenId, TIME_GAP)
+        returns (TokenItem memory)
+    {
+        TokenItem memory token = fetchToken(collectionId, tokenId);
+
+        require(token.owner == _msgSender(), "You must be owner of this token");
+
+        return _transfer(to, collectionId, tokenId);
+    }
+
+    function withdraw(address to, uint256 amount) external onlyOwner nonReentrant {
+        require(to != address(0), "Incorrect address");
         require(_usdtToken.balanceOf(address(this)) >= amount, "Contract must have sufficient funds");
 
         _usdtToken.transfer(to, amount);

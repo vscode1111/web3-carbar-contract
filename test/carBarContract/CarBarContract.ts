@@ -4,6 +4,7 @@ import { ethers } from "hardhat";
 
 import { shouldBehaveCorrectFetching } from "./CarBarContract.behavior.fetching";
 import { shouldBehaveCorrectPayment } from "./CarBarContract.behavior.payment";
+import { shouldBehaveCorrectTransfer } from "./CarBarContract.behavior.transfer";
 import { deployCarBarContractFixture } from "./CarBarContract.fixture";
 
 describe("Unit tests", function () {
@@ -36,5 +37,6 @@ describe("Unit tests", function () {
 
     shouldBehaveCorrectFetching();
     shouldBehaveCorrectPayment();
+    shouldBehaveCorrectTransfer();
   });
 });

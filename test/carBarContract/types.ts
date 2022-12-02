@@ -1,4 +1,5 @@
 import type { SignerWithAddress } from "@nomiclabs/hardhat-ethers/dist/src/signer-with-address";
+import { BigNumber } from "ethers";
 import type { CarBarContract } from "typechain-types/contracts/CarBarContract";
 import { TestUSDT } from "typechain-types/contracts/TestUSDT";
 
@@ -26,4 +27,12 @@ export interface Signers {
   admin: SignerWithAddress;
   user1: SignerWithAddress;
   user2: SignerWithAddress;
+}
+
+export interface ICollectionItem {
+  name: string;
+  url: string;
+  tokenCount: number;
+  price: BigNumber;
+  expiryDate: number;
 }

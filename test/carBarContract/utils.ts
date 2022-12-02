@@ -1,9 +1,10 @@
 import { expect } from "chai";
 import { BigNumber } from "ethers";
-import { ethers } from "hardhat";
+import { Context } from "mocha";
 import { CarBarContract } from "typechain-types/contracts/CarBarContract";
+import { StringNumber } from "types/common";
 
-export type StringNumber = string | number;
+import { END_TIME_2023, PRICE01, TOKEN_COUNT, USER_INITIAL_BALANCE0, getTestCollections } from "./data";
 
 export function getCollectionName(name: StringNumber) {
   return `collection ${name}`;
@@ -19,45 +20,34 @@ export async function initCollections(carBarContract: CarBarContract, collection
   }
 }
 
-export const PRICE0 = parseEther(160);
-export const PRICE1 = parseEther(100);
-export const PRICE2 = parseEther(160);
-export const PRICE01 = PRICE0.add(PRICE1);
-
-export const USER_INITIAL_BALANCE0 = parseEther(1000);
-export const USER_INITIAL_BALANCE1 = parseEther(2000);
-export const USER_INITIAL_BALANCE2 = parseEther(3000);
-export const USER_INITIAL_BALANCE01 = USER_INITIAL_BALANCE0.add(USER_INITIAL_BALANCE1);
-export const USER_INITIAL_BALANCE012 = USER_INITIAL_BALANCE0.add(USER_INITIAL_BALANCE1).add(USER_INITIAL_BALANCE2);
-
-export const TOKEN_COUNT = 300;
-
 export async function initCollectionsReal(
   carBarContract: CarBarContract,
   tokenCount = TOKEN_COUNT,
-  expiryDate = 1703980800,
+  expiryDate = END_TIME_2023,
 ) {
-  await carBarContract.createCollection(
-    "Tesla Model 3 Stnd (1 Day)",
-    "https://carbar.io/nft/Tesla_Model_3_Stnd.png",
-    tokenCount,
-    PRICE0,
-    expiryDate,
-  );
-  await carBarContract.createCollection(
-    "Tesla Model 3 Prfm (1 Day)",
-    "https://carbar.io/nft/Tesla_Model_3_Prfm.png",
-    tokenCount,
-    PRICE1,
-    expiryDate,
-  );
-  await carBarContract.createCollection(
-    "Tesla Model 3 Prfm (1 Day)",
-    "https://carbar.io/nft/Tesla_Model_3_Prfm.png",
-    tokenCount,
-    PRICE2,
-    expiryDate,
-  );
+  const collections = getTestCollections(tokenCount, expiryDate);
+
+  for (const collection of collections) {
+    await carBarContract.createCollection(
+      collection.name,
+      collection.url,
+      collection.tokenCount,
+      collection.price,
+      collection.expiryDate,
+    );
+  }
+}
+
+export async function initCollectionsRealWithBuying(
+  that: Context,
+  tokenCount = 3,
+  collectionId = 0,
+  expiryDate = END_TIME_2023,
+) {
+  await that.adminTestUSDT.mint(that.user1.address, USER_INITIAL_BALANCE0);
+  await that.user1TestUSDT.approve(that.adminCarBarContract.address, PRICE01);
+  await initCollectionsReal(that.adminCarBarContract, tokenCount, expiryDate);
+  await that.user1CarBarContract.buyToken(collectionId);
 }
 
 export function checkToken(token: CarBarContract.TokenItemStructOutput, i: number, owner: string) {
@@ -65,10 +55,6 @@ export function checkToken(token: CarBarContract.TokenItemStructOutput, i: numbe
   expect(token.owner).to.equal(owner);
   expect(token.expiryDate).to.equal(0);
   expect(token.sold).to.equal(false);
-}
-
-export function parseEther(value: StringNumber) {
-  return ethers.utils.parseEther(String(value));
 }
 
 export async function expectThrowsAsync(method: () => Promise<any>, errorMessage: string) {

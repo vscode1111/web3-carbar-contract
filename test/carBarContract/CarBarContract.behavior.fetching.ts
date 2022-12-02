@@ -1,4 +1,5 @@
 import { expect } from "chai";
+import { toUnixTime } from "utils/common";
 
 import { checkToken, getCollectionName, getCollectionUrl, initCollections } from "./utils";
 
@@ -66,6 +67,28 @@ export function shouldBehaveCorrectFetching(): void {
     expect(collection.tokenCount).to.eq(collectionId + 1);
     expect(collection.price).to.eq(collectionId + 2);
     expect(collection.expiryDate).to.eq(collectionId + 3);
+  });
+
+  it("Should correct update certain token", async function () {
+    const collectionCount = 3;
+    const collectionId = 0;
+    const tokenId = 0;
+    const newExpiryDate = toUnixTime();
+
+    await initCollections(this.adminCarBarContract, collectionCount);
+
+    let token = await this.adminCarBarContract.fetchToken(collectionId, tokenId);
+    const owner = token.owner;
+    const sold = token.sold;
+
+    await this.adminCarBarContract.updateToken(collectionId, tokenId, newExpiryDate);
+
+    token = await this.adminCarBarContract.fetchToken(collectionId, tokenId);
+
+    expect(token.tokenId).to.eq(tokenId);
+    expect(token.owner).to.eq(owner);
+    expect(token.expiryDate).to.eq(newExpiryDate);
+    expect(token.sold).to.eq(sold);
   });
 
   it("should correct USDT address", async function () {

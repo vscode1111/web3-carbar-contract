@@ -1,4 +1,6 @@
 import { expect } from "chai";
+import dayjs from "dayjs";
+import { toUnixTime } from "utils/common";
 
 import {
   PRICE0,
@@ -8,9 +10,8 @@ import {
   USER_INITIAL_BALANCE012,
   USER_INITIAL_BALANCE1,
   USER_INITIAL_BALANCE2,
-  initCollectionsReal,
-  vmEsceptionText,
-} from "./utils";
+} from "./data";
+import { initCollectionsReal, initCollectionsRealWithBuying, vmEsceptionText } from "./utils";
 
 export function shouldBehaveCorrectPayment(): void {
   it("should return 0 balances for admin and all users", async function () {
@@ -42,25 +43,10 @@ export function shouldBehaveCorrectPayment(): void {
 
     await this.user1TestUSDT.approve(this.adminCarBarContract.address, PRICE0);
 
-    await this.user1CarBarContract.buyToken(0, PRICE0);
+    await this.user1CarBarContract.buyToken(0);
 
     expect(await this.adminTestUSDT.balanceOf(this.user1.address)).to.equal(USER_INITIAL_BALANCE0.sub(PRICE0));
     expect(await this.adminTestUSDT.balanceOf(this.adminCarBarContract.address)).to.equal(PRICE0);
-    expect(await this.adminTestUSDT.totalSupply()).to.equal(USER_INITIAL_BALANCE0);
-  });
-
-  it("should throw error when user tries to buy token", async function () {
-    await this.adminTestUSDT.mint(this.user1.address, USER_INITIAL_BALANCE0);
-    await initCollectionsReal(this.adminCarBarContract);
-
-    await this.user1TestUSDT.approve(this.adminCarBarContract.address, PRICE1);
-
-    await expect(this.user1CarBarContract.buyToken(0, PRICE1)).to.be.rejectedWith(
-      vmEsceptionText("Price should be correct to NFT collection"),
-    );
-
-    expect(await this.adminTestUSDT.balanceOf(this.user1.address)).to.equal(USER_INITIAL_BALANCE0);
-    expect(await this.adminTestUSDT.balanceOf(this.adminCarBarContract.address)).to.equal(0);
     expect(await this.adminTestUSDT.totalSupply()).to.equal(USER_INITIAL_BALANCE0);
   });
 
@@ -68,8 +54,8 @@ export function shouldBehaveCorrectPayment(): void {
     await this.adminTestUSDT.mint(this.user1.address, USER_INITIAL_BALANCE0);
     await initCollectionsReal(this.adminCarBarContract);
 
-    await expect(this.user1CarBarContract.buyToken(0, PRICE0)).to.be.rejectedWith(
-      vmEsceptionText("User must allow the use of funds"),
+    await expect(this.user1CarBarContract.buyToken(0)).to.be.rejectedWith(
+      vmEsceptionText("User must allow to use of funds"),
     );
 
     expect(await this.adminTestUSDT.balanceOf(this.user1.address)).to.equal(USER_INITIAL_BALANCE0);
@@ -150,7 +136,7 @@ export function shouldBehaveCorrectPayment(): void {
     expect(tokens[2].owner).to.equal(this.admin.address);
 
     //User1 buys token of collection #0
-    await this.user1CarBarContract.buyToken(collectionId0, PRICE0);
+    await this.user1CarBarContract.buyToken(collectionId0);
     tokens = await this.adminCarBarContract.fetchTokens(collectionId0);
     expect(tokens[0].owner).to.equal(this.user1.address);
     expect(tokens[1].owner).to.equal(this.admin.address);
@@ -160,7 +146,7 @@ export function shouldBehaveCorrectPayment(): void {
     expect(await this.adminCarBarContract.balanceOf(this.user2.address, collectionId0)).to.equal(0);
 
     //User2 buys token of collection #0
-    await this.user2CarBarContract.buyToken(collectionId0, PRICE0);
+    await this.user2CarBarContract.buyToken(collectionId0);
     tokens = await this.adminCarBarContract.fetchTokens(collectionId0);
     expect(tokens[0].owner).to.equal(this.user1.address);
     expect(tokens[1].owner).to.equal(this.user2.address);
@@ -176,7 +162,7 @@ export function shouldBehaveCorrectPayment(): void {
     expect(tokens[2].owner).to.equal(this.admin.address);
 
     //User1 buys token of collection #1
-    await this.user1CarBarContract.buyToken(collectionId1, PRICE1);
+    await this.user1CarBarContract.buyToken(collectionId1);
     tokens = await this.adminCarBarContract.fetchTokens(collectionId1);
     expect(tokens[0].owner).to.equal(this.user1.address);
     expect(tokens[1].owner).to.equal(this.admin.address);
@@ -186,7 +172,7 @@ export function shouldBehaveCorrectPayment(): void {
     expect(await this.adminCarBarContract.balanceOf(this.user2.address, collectionId1)).to.equal(0);
 
     //User2 buys token of collection #0
-    await this.user2CarBarContract.buyToken(collectionId1, PRICE1);
+    await this.user2CarBarContract.buyToken(collectionId1);
     tokens = await this.adminCarBarContract.fetchTokens(collectionId1);
     expect(tokens[0].owner).to.equal(this.user1.address);
     expect(tokens[1].owner).to.equal(this.user2.address);
@@ -199,5 +185,16 @@ export function shouldBehaveCorrectPayment(): void {
     expect(await this.adminTestUSDT.balanceOf(this.user2.address)).to.equal(USER_INITIAL_BALANCE0.sub(PRICE01));
     expect(await this.adminTestUSDT.balanceOf(this.adminCarBarContract.address)).to.equal(PRICE01.mul(2));
     expect(await this.adminTestUSDT.totalSupply()).to.equal(USER_INITIAL_BALANCE0.mul(2));
+  });
+
+  it("should should throw error when user tries to buy token of an expired collection", async function () {
+    const tokenCount = 5;
+    const collectionId = 0;
+
+    const newExpiryDate = dayjs().add(-1, "minute").toDate();
+
+    await expect(
+      initCollectionsRealWithBuying(this, tokenCount, collectionId, toUnixTime(newExpiryDate)),
+    ).to.be.rejectedWith(vmEsceptionText("Collection expiration must be greater than the current time"));
   });
 }

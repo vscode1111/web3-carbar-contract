@@ -1,8 +1,9 @@
 # Smart contracts for Car Bar MVP
 
 ## Getting Started
+
 ```text
-yarn 
+yarn
 yarn clean
 yarn test
 ```

@@ -20,6 +20,10 @@
       "constants/*": ["./constants/*"],
       "types": ["./types"],
       "types/*": ["./types/*"],
+      "utils": ["./utils"],
+      "utils/*": ["./utils/*"],
+      "test": ["./test"],
+      "test/*": ["./test/*"],
       "typechain-types": ["./typechain-types"],
       "typechain-types/*": ["./typechain-types/*"]
     }
