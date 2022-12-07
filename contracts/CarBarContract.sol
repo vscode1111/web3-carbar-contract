@@ -241,6 +241,26 @@ contract CarBarContract is
         return _transfer(to, collectionId, tokenId);
     }
 
+    function safeTransferFrom(
+        address from,
+        address to,
+        uint256 id,
+        uint256 amount,
+        bytes memory data
+    ) public override onlyOwner {
+        super.safeTransferFrom(from, to, id, amount, data);
+    }
+
+    function safeBatchTransferFrom(
+        address from,
+        address to,
+        uint256[] memory ids,
+        uint256[] memory amounts,
+        bytes memory data
+    ) public override onlyOwner {
+        super.safeBatchTransferFrom(from, to, ids, amounts, data);
+    }
+
     function withdraw(address to, uint256 amount) external onlyOwner nonReentrant {
         require(to != address(0), "Incorrect address");
         require(_usdtToken.balanceOf(address(this)) >= amount, "Contract must have sufficient funds");
