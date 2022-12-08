@@ -44,7 +44,9 @@ export function shouldBehaveCorrectTransfer(): void {
 
       let tokens = await this.adminCarBarContract.fetchTokens(collectionId);
       expect(tokens[0].owner).to.equal(this.user1.address);
+      expect(tokens[0].sold).to.equal(true);
       expect(tokens[1].owner).to.equal(this.admin.address);
+      expect(tokens[1].sold).to.equal(false);
       expect(await this.adminCarBarContract.balanceOf(this.user1.address, collectionId)).to.equal(1);
       expect(await this.adminCarBarContract.balanceOf(this.user2.address, collectionId)).to.equal(0);
 
@@ -52,7 +54,9 @@ export function shouldBehaveCorrectTransfer(): void {
 
       tokens = await this.adminCarBarContract.fetchTokens(collectionId);
       expect(tokens[0].owner).to.equal(this.user2.address);
+      expect(tokens[0].sold).to.equal(true);
       expect(tokens[1].owner).to.equal(this.admin.address);
+      expect(tokens[1].sold).to.equal(false);
       expect(await this.adminCarBarContract.balanceOf(this.user1.address, collectionId)).to.equal(0);
       expect(await this.adminCarBarContract.balanceOf(this.user2.address, collectionId)).to.equal(1);
     });

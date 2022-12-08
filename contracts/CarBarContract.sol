@@ -63,14 +63,14 @@ contract CarBarContract is
         uint256 expiryDate
     );
 
+    event TokenSold(uint32 indexed collectionId, uint32 indexed tokenId, address seller, address owner, uint256 price);
+
     modifier onlyActualCollection(uint32 collectionId) {
         CollectionItem memory collection = fetchCollection(collectionId);
-
         require(
             block.timestamp <= collection.expiryDate,
             "Collection expiration must be greater than the current time"
         );
-
         _;
     }
 
@@ -80,18 +80,12 @@ contract CarBarContract is
         uint32 timeOffset
     ) {
         TokenItem memory token = fetchToken(collectionId, tokenId);
-
-        if (token.expiryDate > 0) {
-            require(
-                block.timestamp <= token.expiryDate - timeOffset,
-                "Token expiration must be more than a certain period from the current time"
-            );
-        }
-
+        require(
+            token.expiryDate == 0 || block.timestamp <= token.expiryDate - timeOffset,
+            "Token expiration must be more than a certain period from the current time"
+        );
         _;
     }
-
-    event TokenSold(uint32 indexed collectionId, uint32 indexed tokenId, address seller, address owner, uint256 price);
 
     function _authorizeUpgrade(address newImplementation) internal override onlyOwner {}
 
@@ -181,9 +175,9 @@ contract CarBarContract is
         uint32 tokenId,
         uint32 expiryDate
     ) external onlyOwner returns (TokenItem memory) {
-        TokenItem memory token = fetchToken(collectionId, tokenId);
+        TokenItem storage token = _tokenItems[collectionId][tokenId];
         token.expiryDate = expiryDate;
-        return createTokenItem(collectionId, token.tokenId, token.owner, token.expiryDate, token.sold);
+        return token;
     }
 
     function buyToken(uint32 collectionId) external nonReentrant onlyActualCollection(collectionId) {
@@ -209,19 +203,12 @@ contract CarBarContract is
     }
 
     function _transfer(address to, uint32 collectionId, uint32 tokenId) private returns (TokenItem memory) {
-        TokenItem memory token = fetchToken(collectionId, tokenId);
+        TokenItem storage token = _tokenItems[collectionId][tokenId];
         address oldOwner = token.owner;
         token.owner = to;
         token.sold = true;
-        TokenItem memory newToken = createTokenItem(
-            collectionId,
-            token.tokenId,
-            token.owner,
-            token.expiryDate,
-            token.sold
-        );
         _safeTransferFrom(oldOwner, to, collectionId, TOKEN_UNIT, "");
-        return newToken;
+        return token;
     }
 
     function transfer(
