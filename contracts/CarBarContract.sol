@@ -256,7 +256,7 @@ contract CarBarContract is
     ) public override {
         require(
             ids.length == amounts.length && data.length == amounts.length * 4,
-            "Length of ads, amounts and data should be the correct"
+            "Length of ids, amounts and data should be the correct"
         );
         for (uint32 i = 0; i < ids.length; i++) {
             uint32 offset = i * 4;

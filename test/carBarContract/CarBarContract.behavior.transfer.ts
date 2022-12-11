@@ -46,7 +46,7 @@ export function shouldBehaveCorrectTransfer(): void {
       await initCollectionsRealWithBuying(this);
       await expect(
         this.adminCarBarContract.safeBatchTransferFrom(this.user1.address, this.user2.address, [1], [1, 2], []),
-      ).to.be.rejectedWith(vmEsceptionText("Length of ads, amounts and data should be the correct"));
+      ).to.be.rejectedWith(vmEsceptionText("Length of ids, amounts and data should be the correct"));
     });
 
     it("should throw error when user1 tries to call safeBatchTransferFrom with incorrect length of ids and data", async function () {
@@ -59,7 +59,7 @@ export function shouldBehaveCorrectTransfer(): void {
           [1],
           numberToByteArray(0, 2),
         ),
-      ).to.be.rejectedWith(vmEsceptionText("Length of ads, amounts and data should be the correct"));
+      ).to.be.rejectedWith(vmEsceptionText("Length of ids, amounts and data should be the correct"));
     });
 
     it("should throw error when user1 tries to call safeBatchTransferFrom with incorrect array of amounts", async function () {
