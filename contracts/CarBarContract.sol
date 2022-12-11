@@ -8,6 +8,7 @@ import "@openzeppelin/contracts-upgradeable/proxy/utils/Initializable.sol";
 import "@openzeppelin/contracts-upgradeable/proxy/utils/UUPSUpgradeable.sol";
 import "@openzeppelin/contracts-upgradeable/security/ReentrancyGuardUpgradeable.sol";
 import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
+import "hardhat/console.sol";
 
 contract CarBarContract is
     Initializable,
@@ -84,6 +85,16 @@ contract CarBarContract is
             token.expiryDate == 0 || block.timestamp <= token.expiryDate - timeOffset,
             "Token expiration must be more than a certain period from the current time"
         );
+        _;
+    }
+
+    modifier onlyTokenOnwer(
+        address owner,
+        uint32 collectionId,
+        uint32 tokenId
+    ) {
+        TokenItem memory token = fetchToken(collectionId, tokenId);
+        require(token.owner == owner, "You must be owner of this token");
         _;
     }
 
@@ -192,8 +203,9 @@ contract CarBarContract is
         CountersUpgradeable.Counter storage counter = _collectionCounters[collectionId];
 
         uint32 tokenId = uint32(counter.current());
+        TokenItem storage token = _tokenItems[collectionId][tokenId];
 
-        _transfer(sender, collectionId, tokenId);
+        _transferToken(token.owner, sender, collectionId, tokenId);
 
         counter.increment();
 
@@ -202,40 +214,37 @@ contract CarBarContract is
         emit TokenSold(collectionId, tokenId, owner, sender, amount);
     }
 
-    function _transfer(address to, uint32 collectionId, uint32 tokenId) private returns (TokenItem memory) {
+    function _transferToken(
+        address from,
+        address to,
+        uint32 collectionId,
+        uint32 tokenId
+    ) private returns (TokenItem memory) {
         TokenItem storage token = _tokenItems[collectionId][tokenId];
-        address oldOwner = token.owner;
         token.owner = to;
         token.sold = true;
-        _safeTransferFrom(oldOwner, to, collectionId, TOKEN_UNIT, "");
+        _safeTransferFrom(from, to, collectionId, TOKEN_UNIT, "");
         return token;
     }
 
-    function transfer(
+    function transferToken(
+        address from,
         address to,
         uint32 collectionId,
         uint32 tokenId
     )
-        external
+        public
+        onlyTokenOnwer(from, collectionId, tokenId)
         onlyActualCollection(collectionId)
         onlyActualToken(collectionId, tokenId, TIME_GAP)
         returns (TokenItem memory)
     {
-        TokenItem memory token = fetchToken(collectionId, tokenId);
-
-        require(token.owner == _msgSender(), "You must be owner of this token");
-
-        return _transfer(to, collectionId, tokenId);
+        return _transferToken(from, to, collectionId, tokenId);
     }
 
-    function safeTransferFrom(
-        address from,
-        address to,
-        uint256 id,
-        uint256 amount,
-        bytes memory data
-    ) public override onlyOwner {
-        super.safeTransferFrom(from, to, id, amount, data);
+    function safeTransferFrom(address from, address to, uint256 id, uint256 amount, bytes memory data) public override {
+        require(amount == TOKEN_UNIT, "Amount must be 1");
+        transferToken(from, to, uint32(id), uint32(bytes4(data)));
     }
 
     function safeBatchTransferFrom(
@@ -244,8 +253,16 @@ contract CarBarContract is
         uint256[] memory ids,
         uint256[] memory amounts,
         bytes memory data
-    ) public override onlyOwner {
-        super.safeBatchTransferFrom(from, to, ids, amounts, data);
+    ) public override {
+        require(
+            ids.length == amounts.length && data.length == amounts.length * 4,
+            "Length of ads, amounts and data should be the correct"
+        );
+        for (uint32 i = 0; i < ids.length; i++) {
+            uint32 offset = i * 4;
+            bytes memory _data = bytes.concat(data[0 + offset], data[1 + offset], data[2 + offset], data[3 + offset]);
+            safeTransferFrom(from, to, ids[i], amounts[i], _data);
+        }
     }
 
     function withdraw(address to, uint256 amount) external onlyOwner nonReentrant {

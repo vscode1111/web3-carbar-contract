@@ -7,7 +7,7 @@ import { shouldBehaveCorrectPayment } from "./CarBarContract.behavior.payment";
 import { shouldBehaveCorrectTransfer } from "./CarBarContract.behavior.transfer";
 import { deployCarBarContractFixture } from "./CarBarContract.fixture";
 
-describe("Unit tests", function () {
+describe("CarBarContract", function () {
   before(async function () {
     const signers: SignerWithAddress[] = await ethers.getSigners();
     this.admin = signers[0];
@@ -17,26 +17,24 @@ describe("Unit tests", function () {
     this.loadFixture = loadFixture;
   });
 
-  describe("CarBarContract", function () {
-    beforeEach(async function () {
-      const {
-        adminTestUSDT,
-        user1TestUSDT,
-        user2TestUSDT,
-        adminCarBarContract,
-        user1CarBarContract,
-        user2CarBarContract,
-      } = await this.loadFixture(deployCarBarContractFixture);
-      this.adminTestUSDT = adminTestUSDT;
-      this.user1TestUSDT = user1TestUSDT;
-      this.user2TestUSDT = user2TestUSDT;
-      this.adminCarBarContract = adminCarBarContract;
-      this.user1CarBarContract = user1CarBarContract;
-      this.user2CarBarContract = user2CarBarContract;
-    });
-
-    shouldBehaveCorrectFetching();
-    shouldBehaveCorrectPayment();
-    shouldBehaveCorrectTransfer();
+  beforeEach(async function () {
+    const {
+      adminTestUSDT,
+      user1TestUSDT,
+      user2TestUSDT,
+      adminCarBarContract,
+      user1CarBarContract,
+      user2CarBarContract,
+    } = await this.loadFixture(deployCarBarContractFixture);
+    this.adminTestUSDT = adminTestUSDT;
+    this.user1TestUSDT = user1TestUSDT;
+    this.user2TestUSDT = user2TestUSDT;
+    this.adminCarBarContract = adminCarBarContract;
+    this.user1CarBarContract = user1CarBarContract;
+    this.user2CarBarContract = user2CarBarContract;
   });
+
+  shouldBehaveCorrectFetching();
+  shouldBehaveCorrectPayment();
+  shouldBehaveCorrectTransfer();
 });
