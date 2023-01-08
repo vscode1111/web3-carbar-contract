@@ -12,14 +12,9 @@ const dotenvConfigPath: string = process.env.DOTENV_CONFIG_PATH || "./.env";
 dotenvConfig({ path: resolve(__dirname, dotenvConfigPath) });
 
 // Ensure that we have all the environment variables we need.
-const infuraApiKey: string | undefined = process.env.INFURA_API_KEY;
-if (!infuraApiKey) {
-  throw new Error("Please set your INFURA_API_KEY in a .env file");
-}
-
-const mnemonic: string | undefined = process.env.MNEMONIC || "";
-if (!mnemonic) {
-  throw new Error("Please set your MNEMONIC in a .env file");
+const providerUrl: string | undefined = process.env.PROVIDER_URL;
+if (!providerUrl) {
+  throw new Error("Please set your PROVIDER_URL in a .env file");
 }
 
 const metamaskPrivateKey = `0x${process.env.METAMASK_PRIVATE_KEY}`;
@@ -27,22 +22,16 @@ if (metamaskPrivateKey.length < 3) {
   throw new Error("Please set your METAMASK_PRIVATE_KEY in a .env file");
 }
 
-const chainIds = {
-  hardhat: 31337,
-  "polygon-mainnet": 137,
-  "polygon-mumbai": 80001,
-};
-
-function getChainConfig(chain: keyof typeof chainIds): NetworkUserConfig {
+function getChainConfig(): NetworkUserConfig {
   return {
-    url: `https://${chain}.infura.io/v3/${infuraApiKey}`,
+    url: providerUrl,
     accounts: [metamaskPrivateKey],
-    chainId: chainIds[chain],
   };
 }
 
 const config: HardhatUserConfig = {
-  defaultNetwork: "mumbai",
+  // defaultNetwork: "mumbai",
+  defaultNetwork: "polygon",
   etherscan: {
     apiKey: {
       polygon: process.env.POLYGONSCAN_API_KEY || "",
@@ -56,14 +45,8 @@ const config: HardhatUserConfig = {
     src: "./contracts",
   },
   networks: {
-    hardhat: {
-      accounts: {
-        mnemonic,
-      },
-      chainId: chainIds.hardhat,
-    },
-    polygon: getChainConfig("polygon-mainnet"),
-    mumbai: getChainConfig("polygon-mumbai"),
+    polygon: getChainConfig(),
+    mumbai: getChainConfig(),
   },
   paths: {
     artifacts: "./artifacts",

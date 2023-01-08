@@ -1,9 +1,9 @@
-import { BigNumber } from "ethers";
+import { BigNumber, BigNumberish } from "ethers";
 import { ethers } from "hardhat";
 import { StringNumber } from "types/common";
 
-export function toWei(value: StringNumber): BigNumber {
-  return ethers.utils.parseEther(String(value));
+export function toWei(value: StringNumber, unitName?: BigNumberish): BigNumber {
+  return ethers.utils.parseUnits(String(value), unitName);
 }
 
 export function toUnixTime(value: string | Date = new Date()): number {

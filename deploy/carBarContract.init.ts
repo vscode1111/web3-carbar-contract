@@ -39,7 +39,6 @@ const func: DeployFunction = async (hre: HardhatRuntimeEnvironment): Promise<voi
   }
 
   const diff = (new Date().getTime() - t0.getTime()) / 1000;
-
   console.log(`CarBarContract initialization was finished in ${diff.toFixed()} sec`);
 };
 

@@ -7,6 +7,7 @@ import type { CarBarContract__factory } from "typechain-types/factories/contract
 import { DeployNetworks } from "types/common";
 
 const func: DeployFunction = async (hre: HardhatRuntimeEnvironment): Promise<void> => {
+  const t0 = new Date();
   const {
     ethers,
     network: { name },
@@ -17,8 +18,8 @@ const func: DeployFunction = async (hre: HardhatRuntimeEnvironment): Promise<voi
 
   const carBarContractFactory = <CarBarContract__factory>await ethers.getContractFactory("CarBarContract");
   const carBarContract = <CarBarContract>await upgrades.upgradeProxy(contractAddress, carBarContractFactory);
-
-  console.log(`CarBarContract was upgrated in: ${carBarContract.address}`);
+  const diff = (new Date().getTime() - t0.getTime()) / 1000;
+  console.log(`CarBarContract was upgrated in: ${carBarContract.address} in ${diff.toFixed()} sec`);
 };
 
 func.tags = ["CarBarContract:upgrade"];

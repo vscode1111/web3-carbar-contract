@@ -3,7 +3,7 @@ import { expect } from "chai";
 import dayjs from "dayjs";
 import { numberToByteArray, toUnixTime } from "utils/common";
 
-import { END_TIME_2023, PRICE0, PRICE01, PRICE1, USER_INITIAL_BALANCE0 } from "./data";
+import { END_TIME_2023, PRICE0, PRICE01, PRICE1, USER_INITIAL_BALANCE0, ZERO } from "./data";
 import { initCollectionsReal, initCollectionsRealWithBuying, vmEsceptionText } from "./utils";
 
 export function shouldBehaveCorrectTransfer(): void {
@@ -122,7 +122,7 @@ export function shouldBehaveCorrectTransfer(): void {
       expect(tokens[1].owner).to.equal(this.admin.address);
       expect(tokens[1].sold).to.equal(false);
       expect(await this.adminCarBarContract.balanceOf(this.user1.address, collectionId)).to.equal(1);
-      expect(await this.adminCarBarContract.balanceOf(this.user2.address, collectionId)).to.equal(0);
+      expect(await this.adminCarBarContract.balanceOf(this.user2.address, collectionId)).to.equal(ZERO);
 
       await this.user1CarBarContract.transferToken(this.user1.address, this.user2.address, collectionId, tokenId);
 
@@ -131,7 +131,7 @@ export function shouldBehaveCorrectTransfer(): void {
       expect(tokens[0].sold).to.equal(true);
       expect(tokens[1].owner).to.equal(this.admin.address);
       expect(tokens[1].sold).to.equal(false);
-      expect(await this.adminCarBarContract.balanceOf(this.user1.address, collectionId)).to.equal(0);
+      expect(await this.adminCarBarContract.balanceOf(this.user1.address, collectionId)).to.equal(ZERO);
       expect(await this.adminCarBarContract.balanceOf(this.user2.address, collectionId)).to.equal(1);
     });
 
@@ -177,7 +177,7 @@ export function shouldBehaveCorrectTransfer(): void {
       const tokens = await this.adminCarBarContract.fetchTokens(collectionId);
       expect(tokens[0].owner).to.equal(this.user2.address);
       expect(tokens[1].owner).to.equal(this.admin.address);
-      expect(await this.adminCarBarContract.balanceOf(this.user1.address, collectionId)).to.equal(0);
+      expect(await this.adminCarBarContract.balanceOf(this.user1.address, collectionId)).to.equal(ZERO);
       expect(await this.adminCarBarContract.balanceOf(this.user2.address, collectionId)).to.equal(1);
     });
 

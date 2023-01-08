@@ -63,7 +63,14 @@ contract CarBarContract is
         uint256 expiryDate
     );
 
-    event TokenSold(uint32 indexed collectionId, uint32 indexed tokenId, address seller, address owner, uint256 price);
+    event TokenSold(
+        uint32 indexed collectionId,
+        uint32 indexed tokenId,
+        address seller,
+        address owner,
+        uint256 price,
+        uint32 timestamp
+    );
 
     modifier onlyActualCollection(uint32 collectionId) {
         CollectionItem memory collection = fetchCollection(collectionId);
@@ -197,6 +204,7 @@ contract CarBarContract is
         address sender = _msgSender();
 
         require(_usdtToken.allowance(sender, address(this)) >= amount, "User must allow to use of funds");
+        require(_usdtToken.balanceOf(sender) >= amount, "User must have funds");
         require(balanceOf(owner, collectionId) >= 1, "The collection must have at least 1 available token");
 
         CountersUpgradeable.Counter storage counter = _collectionCounters[collectionId];
@@ -210,7 +218,7 @@ contract CarBarContract is
 
         _usdtToken.transferFrom(sender, address(this), amount);
 
-        emit TokenSold(collectionId, tokenId, owner, sender, amount);
+        emit TokenSold(collectionId, tokenId, owner, sender, amount, uint32(block.timestamp));
     }
 
     function _transferToken(

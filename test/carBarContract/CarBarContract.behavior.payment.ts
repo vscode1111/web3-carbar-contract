@@ -1,5 +1,6 @@
 import { expect } from "chai";
 import dayjs from "dayjs";
+import { TokenSoldEvent } from "typechain-types/contracts/CarBarContract";
 import { toUnixTime } from "utils/common";
 
 import {
@@ -10,6 +11,7 @@ import {
   USER_INITIAL_BALANCE012,
   USER_INITIAL_BALANCE1,
   USER_INITIAL_BALANCE2,
+  ZERO,
 } from "./data";
 import { initCollectionsReal, initCollectionsRealWithBuying, vmEsceptionText } from "./utils";
 
@@ -17,13 +19,13 @@ export function shouldBehaveCorrectPayment(): void {
   describe("payment", () => {
     it("should return 0 balances for admin and all users", async function () {
       const adminBalance = await this.adminTestUSDT.balanceOf(this.admin.address);
-      expect(adminBalance).to.equal(0);
+      expect(adminBalance).to.equal(ZERO);
 
       const user1Balance = await this.adminTestUSDT.balanceOf(this.user1.address);
-      expect(user1Balance).to.equal(0);
+      expect(user1Balance).to.equal(ZERO);
 
       const user2Balance = await this.adminTestUSDT.balanceOf(this.user2.address);
-      expect(user2Balance).to.equal(0);
+      expect(user2Balance).to.equal(ZERO);
     });
 
     it("should return correct balances for admin and all users after minting", async function () {
@@ -31,7 +33,7 @@ export function shouldBehaveCorrectPayment(): void {
       await this.adminTestUSDT.mint(this.user1.address, USER_INITIAL_BALANCE1);
       await this.adminTestUSDT.mint(this.user2.address, USER_INITIAL_BALANCE2);
 
-      expect(await this.adminTestUSDT.balanceOf(this.adminCarBarContract.address)).to.equal(0);
+      expect(await this.adminTestUSDT.balanceOf(this.adminCarBarContract.address)).to.equal(ZERO);
       expect(await this.adminTestUSDT.balanceOf(this.admin.address)).to.equal(USER_INITIAL_BALANCE0);
       expect(await this.adminTestUSDT.balanceOf(this.user1.address)).to.equal(USER_INITIAL_BALANCE1);
       expect(await this.adminTestUSDT.balanceOf(this.user2.address)).to.equal(USER_INITIAL_BALANCE2);
@@ -39,12 +41,30 @@ export function shouldBehaveCorrectPayment(): void {
     });
 
     it("should procced the payment of the token by the user", async function () {
+      const collectionIdTest = 0;
+
       await this.adminTestUSDT.mint(this.user1.address, USER_INITIAL_BALANCE0);
       await initCollectionsReal(this.adminCarBarContract);
 
       await this.user1TestUSDT.approve(this.adminCarBarContract.address, PRICE0);
 
-      await this.user1CarBarContract.buyToken(0);
+      const tx = await this.user1CarBarContract.buyToken(collectionIdTest);
+      const receipt = await tx.wait();
+
+      const tokenSoldEvent = receipt.events?.find((item) => item.event === "TokenSold") as TokenSoldEvent;
+
+      expect(tokenSoldEvent).to.not.be.undefined;
+
+      const { collectionId, tokenId, seller, owner, price, timestamp } = tokenSoldEvent?.args;
+
+      const now = Math.round(new Date().getTime() / 1000);
+
+      expect(collectionId).to.be.equal(collectionIdTest);
+      expect(tokenId).to.be.equal(0);
+      expect(seller).to.be.equal(this.admin.address);
+      expect(owner).to.be.equal(this.user1.address);
+      expect(price).to.be.equal(PRICE0);
+      expect(timestamp).to.be.closeTo(now, 30);
 
       expect(await this.adminTestUSDT.balanceOf(this.user1.address)).to.equal(USER_INITIAL_BALANCE0.sub(PRICE0));
       expect(await this.adminTestUSDT.balanceOf(this.adminCarBarContract.address)).to.equal(PRICE0);
@@ -60,8 +80,20 @@ export function shouldBehaveCorrectPayment(): void {
       );
 
       expect(await this.adminTestUSDT.balanceOf(this.user1.address)).to.equal(USER_INITIAL_BALANCE0);
-      expect(await this.adminTestUSDT.balanceOf(this.adminCarBarContract.address)).to.equal(0);
+      expect(await this.adminTestUSDT.balanceOf(this.adminCarBarContract.address)).to.equal(ZERO);
       expect(await this.adminTestUSDT.totalSupply()).to.equal(USER_INITIAL_BALANCE0);
+    });
+
+    it("should throw error when user tries to buy token withount funds", async function () {
+      await initCollectionsReal(this.adminCarBarContract);
+
+      await this.user1TestUSDT.approve(this.adminCarBarContract.address, PRICE01);
+
+      await expect(this.user1CarBarContract.buyToken(0)).to.be.rejectedWith(vmEsceptionText("User must have funds"));
+
+      expect(await this.adminTestUSDT.balanceOf(this.user1.address)).to.equal(ZERO);
+      expect(await this.adminTestUSDT.balanceOf(this.adminCarBarContract.address)).to.equal(ZERO);
+      expect(await this.adminTestUSDT.totalSupply()).to.equal(ZERO);
     });
 
     it("should withdraw funds to user2 by admin", async function () {
@@ -84,7 +116,7 @@ export function shouldBehaveCorrectPayment(): void {
       );
 
       expect(await this.adminTestUSDT.balanceOf(this.adminCarBarContract.address)).to.equal(USER_INITIAL_BALANCE0);
-      expect(await this.adminTestUSDT.balanceOf(this.user2.address)).to.equal(0);
+      expect(await this.adminTestUSDT.balanceOf(this.user2.address)).to.equal(ZERO);
       expect(await this.adminTestUSDT.totalSupply()).to.equal(USER_INITIAL_BALANCE0);
     });
 
@@ -96,7 +128,7 @@ export function shouldBehaveCorrectPayment(): void {
       );
 
       expect(await this.adminTestUSDT.balanceOf(this.adminCarBarContract.address)).to.equal(USER_INITIAL_BALANCE0);
-      expect(await this.adminTestUSDT.balanceOf(this.user2.address)).to.equal(0);
+      expect(await this.adminTestUSDT.balanceOf(this.user2.address)).to.equal(ZERO);
       expect(await this.adminTestUSDT.totalSupply()).to.equal(USER_INITIAL_BALANCE0);
     });
 
@@ -108,7 +140,7 @@ export function shouldBehaveCorrectPayment(): void {
       );
 
       expect(await this.adminTestUSDT.balanceOf(this.adminCarBarContract.address)).to.equal(USER_INITIAL_BALANCE0);
-      expect(await this.adminTestUSDT.balanceOf(this.user2.address)).to.equal(0);
+      expect(await this.adminTestUSDT.balanceOf(this.user2.address)).to.equal(ZERO);
       expect(await this.adminTestUSDT.totalSupply()).to.equal(USER_INITIAL_BALANCE0);
     });
 
@@ -144,7 +176,7 @@ export function shouldBehaveCorrectPayment(): void {
       expect(tokens[2].owner).to.equal(this.admin.address);
       expect(await this.adminCarBarContract.balanceOf(this.admin.address, collectionId0)).to.equal(tokenCount - 1);
       expect(await this.adminCarBarContract.balanceOf(this.user1.address, collectionId0)).to.equal(1);
-      expect(await this.adminCarBarContract.balanceOf(this.user2.address, collectionId0)).to.equal(0);
+      expect(await this.adminCarBarContract.balanceOf(this.user2.address, collectionId0)).to.equal(ZERO);
 
       //User2 buys token of collection #0
       await this.user2CarBarContract.buyToken(collectionId0);
@@ -170,7 +202,7 @@ export function shouldBehaveCorrectPayment(): void {
       expect(tokens[2].owner).to.equal(this.admin.address);
       expect(await this.adminCarBarContract.balanceOf(this.admin.address, collectionId1)).to.equal(tokenCount - 1);
       expect(await this.adminCarBarContract.balanceOf(this.user1.address, collectionId1)).to.equal(1);
-      expect(await this.adminCarBarContract.balanceOf(this.user2.address, collectionId1)).to.equal(0);
+      expect(await this.adminCarBarContract.balanceOf(this.user2.address, collectionId1)).to.equal(ZERO);
 
       //User2 buys token of collection #0
       await this.user2CarBarContract.buyToken(collectionId1);

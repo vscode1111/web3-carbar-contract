@@ -7,19 +7,22 @@ import type { CarBarContract__factory } from "typechain-types/factories/contract
 import { DeployNetworks } from "types/common";
 
 const func: DeployFunction = async (hre: HardhatRuntimeEnvironment): Promise<void> => {
+  const t0 = new Date();
   console.log("CarBarContract proxy is deploying...");
   const {
     ethers,
     network: { name },
   } = hre;
   const usdtTokenAddress = TOKENS.USDT[name as keyof DeployNetworks];
+  console.log(`USDT address is ${usdtTokenAddress}`);
   const carBarContractFactory = <CarBarContract__factory>await ethers.getContractFactory("CarBarContract");
   const carBarContract = <CarBarContract>await upgrades.deployProxy(carBarContractFactory, [usdtTokenAddress], {
     initializer: "initialize",
     kind: "uups",
   });
   await carBarContract.deployed();
-  console.log(`CarBarContract deployed to: ${carBarContract.address}`);
+  const diff = (new Date().getTime() - t0.getTime()) / 1000;
+  console.log(`CarBarContract deployed to: ${carBarContract.address} in ${diff.toFixed()} sec`);
 };
 
 func.tags = ["CarBarContract:proxy"];
