@@ -30,3 +30,20 @@ export function byteArrayToNumber(byteArray: number[]): number {
 
   return value;
 }
+
+export async function callWithTimer(fn: () => Promise<void>, finishMessageFn?: (diff: string) => string) {
+  const startTime = new Date();
+  const startMessage = `->Function was started at ${startTime.toLocaleTimeString()}`;
+  console.log(startMessage);
+  try {
+    await fn();
+  } catch (e) {
+    console.log(e);
+  }
+  const finishTime = new Date();
+  const diff = ((finishTime.getTime() - startTime.getTime()) / 1000).toFixed();
+  const finishMessage = finishMessageFn
+    ? finishMessageFn(diff)
+    : `<-Function was finished at ${finishTime.toLocaleTimeString()} in ${diff} sec`;
+  console.log(finishMessage);
+}

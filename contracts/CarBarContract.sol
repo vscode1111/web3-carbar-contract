@@ -8,6 +8,7 @@ import "@openzeppelin/contracts-upgradeable/proxy/utils/Initializable.sol";
 import "@openzeppelin/contracts-upgradeable/proxy/utils/UUPSUpgradeable.sol";
 import "@openzeppelin/contracts-upgradeable/security/ReentrancyGuardUpgradeable.sol";
 import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
+import "@openzeppelin/contracts-upgradeable/utils/StringsUpgradeable.sol";
 
 contract CarBarContract is
     Initializable,
@@ -16,6 +17,8 @@ contract CarBarContract is
     UUPSUpgradeable,
     ReentrancyGuardUpgradeable
 {
+    using StringsUpgradeable for uint256;
+
     function initialize(address usdtTokenAddress) public initializer {
         __ERC1155_init("");
         __Ownable_init();
@@ -305,5 +308,9 @@ contract CarBarContract is
 
     function fetchToken(uint32 collectionId, uint32 tokenId) public view returns (TokenItem memory) {
         return _tokenItems[collectionId][tokenId];
+    }
+
+    function uri(uint256 tokenId) public pure override returns (string memory) {
+        return string.concat("http://20.68.212.46:8081/nft_json/", tokenId.toString(), ".json");
     }
 }

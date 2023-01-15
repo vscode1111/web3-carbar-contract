@@ -1,11 +1,14 @@
 import { CONTRACTS } from "constants/addresses";
 import { DeployFunction } from "hardhat-deploy/types";
 import { HardhatRuntimeEnvironment } from "hardhat/types";
-import { getTestCollections } from "test/carBarContract/data";
 import type { CarBarContract } from "typechain-types/contracts/CarBarContract";
 import type { CarBarContract__factory } from "typechain-types/factories/contracts/CarBarContract__factory";
 import { DeployNetworks } from "types/common";
 import { callWithTimer } from "utils/common";
+
+const USER_ADDRESS = "0x8E05d1F687d12eBBAA704a9c614d425bc13A3643";
+const COLLECTION_ID = 2;
+const TOKEN_ID = 0;
 
 const func: DeployFunction = async (hre: HardhatRuntimeEnvironment): Promise<void> => {
   await callWithTimer(async () => {
@@ -15,31 +18,20 @@ const func: DeployFunction = async (hre: HardhatRuntimeEnvironment): Promise<voi
     } = hre;
     const contractAddress = CONTRACTS.CAR_BAR[name as keyof DeployNetworks];
 
-    console.log(`CarBarContract [${contractAddress}] is initiating...`);
+    console.log(`CarBarContract [${contractAddress}] starts simulation...`);
 
     const [admin] = await hre.ethers.getSigners();
 
     const carBarContractFactory = <CarBarContract__factory>await ethers.getContractFactory("CarBarContract");
     const carBarContract = <CarBarContract>await carBarContractFactory.connect(admin).attach(contractAddress);
-    const collections = getTestCollections();
 
-    for (const collection of collections) {
-      const name = collection.name;
-      console.log(`Sending transaction for collection "${name}"...`);
-      const tx = await carBarContract.createCollection(
-        collection.name,
-        collection.url,
-        collection.tokenCount,
-        collection.price,
-        collection.expiryDate,
-      );
-      console.log(`Sent transaction for collection "${name}"`);
-      await tx.wait();
-      console.log(`Collection "${name}" was mined`);
-    }
+    let tx = await carBarContract.transferToken(admin.address, USER_ADDRESS, COLLECTION_ID, TOKEN_ID);
+    console.log(`Call transferToken...`);
+    await tx.wait();
+    console.log(`Token ${COLLECTION_ID}/${TOKEN_ID} was transfered`);
   });
 };
 
-func.tags = ["CarBarContract:init"];
+func.tags = ["CarBarContract:sim"];
 
 export default func;

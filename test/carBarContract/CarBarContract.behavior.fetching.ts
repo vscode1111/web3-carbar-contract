@@ -6,9 +6,9 @@ import { checkToken, getCollectionName, getCollectionUrl, initCollections } from
 export function shouldBehaveCorrectFetching(): void {
   describe("fetching", () => {
     it("should return the correct URI once it's changed", async function () {
-      const testText = "Test URI";
+      const testText = "http://20.68.212.46:8081/nft_json/0.json";
       await this.adminCarBarContract.setURI(testText);
-      const result = await this.adminCarBarContract.uri(1);
+      const result = await this.adminCarBarContract.uri(0);
       expect(result).to.equal(testText);
     });
 

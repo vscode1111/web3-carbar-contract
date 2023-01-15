@@ -12,7 +12,8 @@ export const CONTRACTS: Record<CONTRACT_LIST, DeployNetworks> = {
   CAR_BAR: {
     // mumbai: "0x23d4Ff9F06105579D66D3C2E42bbFfB11C839AA8",
     mumbai: "0x4996FC03735B44b53531530a02A0EDd7C6e19b69",
-    polygon: "0xaB438A70A0d2b7D2AeD0dd08c3E65521b363e326",
+    // polygon: "0xaB438A70A0d2b7D2AeD0dd08c3E65521b363e326", //prev prod
+    polygon: "0xdF7D00eb2d9ad2AE9c6A70a6f02CdD5688f7Ad25", //new prod
   },
 };
 
