@@ -3,52 +3,70 @@ import { toUnixTime, toWei } from "utils/common";
 
 import { ICollectionItem } from "./types";
 
-// export const TOKEN_COUNT = 300;
-export const TOKEN_COUNT = 60;
+const PROD_DATA = false;
+
+export const TOKEN_COUNT = PROD_DATA ? 300 : 60;
 
 export const TUSDT_DECIMALS = 6;
 
-export const PRICE0 = toWei(100, TUSDT_DECIMALS);
-export const PRICE1 = toWei(160, TUSDT_DECIMALS);
-export const PRICE2 = toWei(160, TUSDT_DECIMALS);
-export const PRICE01 = PRICE0.add(PRICE1);
+const PRICE_DIV = BigNumber.from(PROD_DATA ? "1" : "1000");
 
-export const ZERO = toWei(0);
+export const testValue = {
+  tokenCount: 5,
+  collectionId: 0,
+  tokenId: 0,
+  zero: toWei(0),
+  price0: toWei(100, TUSDT_DECIMALS).div(PRICE_DIV),
+  price1: toWei(160, TUSDT_DECIMALS).div(PRICE_DIV),
+  price2: toWei(100, TUSDT_DECIMALS).div(PRICE_DIV),
+  price01: toWei(100 + 160, TUSDT_DECIMALS).div(PRICE_DIV),
+  userInitialBalance0: toWei(1000, TUSDT_DECIMALS).div(PRICE_DIV),
+  userInitialBalance1: toWei(2000, TUSDT_DECIMALS).div(PRICE_DIV),
+  userInitialBalance2: toWei(3000, TUSDT_DECIMALS).div(PRICE_DIV),
+  userInitialBalance01: toWei(1000 + 2000, TUSDT_DECIMALS).div(PRICE_DIV),
+  userInitialBalance012: toWei(1000 + 2000 + 3000, TUSDT_DECIMALS).div(PRICE_DIV),
+  endTime2023: toUnixTime(PROD_DATA ? "2023-12-31 23:59:59" : "2023-04-30 23:59:59"),
+};
 
-export const USER_INITIAL_BALANCE0 = toWei(1000, TUSDT_DECIMALS);
-export const USER_INITIAL_BALANCE1 = toWei(2000, TUSDT_DECIMALS);
-export const USER_INITIAL_BALANCE2 = toWei(3000, TUSDT_DECIMALS);
-export const USER_INITIAL_BALANCE01 = USER_INITIAL_BALANCE0.add(USER_INITIAL_BALANCE1);
-export const USER_INITIAL_BALANCE012 = USER_INITIAL_BALANCE0.add(USER_INITIAL_BALANCE1).add(USER_INITIAL_BALANCE2);
-
-// export const END_TIME_2023 = toUnixTime("2023-12-31 23:59:59");
-export const END_TIME_2023 = toUnixTime("2023-04-30 23:59:59");
-
-// const PRICE_DIV = BigNumber.from('1');
-const PRICE_DIV = BigNumber.from("1000");
-
-export function getTestCollections(tokenCount = TOKEN_COUNT, expiryDate = END_TIME_2023): ICollectionItem[] {
+export function getTestCollections(tokenCount = TOKEN_COUNT, expiryDate = testValue.endTime2023): ICollectionItem[] {
   return [
     {
       name: "Tesla Model 3 Stnd (1 Day)",
-      url: "https://carbar.io/nft/Tesla_Model_3_Stnd.png",
       tokenCount,
-      price: PRICE0.div(PRICE_DIV),
+      price: testValue.price0,
       expiryDate,
     },
     {
       name: "Tesla Model 3 Prfm (1 Day)",
-      url: "https://carbar.io/nft/Tesla_Model_3_Prfm.png",
       tokenCount,
-      price: PRICE1.div(PRICE_DIV),
+      price: testValue.price1,
       expiryDate,
     },
     {
       name: "Tesla Model Y (1 Day)",
-      url: "https://carbar.io/nft/Tesla_Y.png",
       tokenCount,
-      price: PRICE2.div(PRICE_DIV),
+      price: testValue.price2,
       expiryDate,
     },
   ];
+}
+
+export const errorMessage = {
+  ownable: "Ownable: caller is not the owner",
+  youMustBeOwnerOrApproved: "You must be owner of this token or approved",
+  amountMustBe1: "Amount must be 1",
+  priceMustBeGreaterZero: "Price must be greater than zero",
+  userMustAllowToUseFunds: "User must allow to use of funds",
+  userMustHaveFunds: "User must have funds",
+  collectionMustHave1token: "The collection must have at least 1 available token",
+  collectionExpirationMustBeGreater: "Collection expiration must be greater than the current time",
+  tokenExpirationMustBeMore: "Token expiration must be more than a certain period from the current time",
+  contractMustHaveSufficientFunds: "Contract must have sufficient funds",
+  dataShouldBeCorrect: "Length of ids, amounts and data should be the correct",
+};
+
+export enum Sold {
+  None,
+  Trasfer,
+  TokenSold,
 }

@@ -2,8 +2,8 @@ import { TOKENS } from "constants/addresses";
 import { upgrades } from "hardhat";
 import { DeployFunction } from "hardhat-deploy/types";
 import { HardhatRuntimeEnvironment } from "hardhat/types";
-import type { CarBarContract } from "typechain-types/contracts/CarBarContract";
-import type { CarBarContract__factory } from "typechain-types/factories/contracts/CarBarContract__factory";
+import { CarBarContract } from "typechain-types/contracts/CarBarContract";
+import { CarBarContract__factory } from "typechain-types/factories/contracts/CarBarContract__factory";
 import { DeployNetworks } from "types/common";
 import { callWithTimer } from "utils/common";
 

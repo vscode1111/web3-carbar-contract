@@ -1,14 +1,13 @@
 import { CONTRACTS } from "constants/addresses";
 import { DeployFunction } from "hardhat-deploy/types";
 import { HardhatRuntimeEnvironment } from "hardhat/types";
-import type { CarBarContract } from "typechain-types/contracts/CarBarContract";
-import type { CarBarContract__factory } from "typechain-types/factories/contracts/CarBarContract__factory";
+import { CarBarContract } from "typechain-types/contracts/CarBarContract";
+import { CarBarContract__factory } from "typechain-types/factories/contracts/CarBarContract__factory";
 import { DeployNetworks } from "types/common";
 import { callWithTimer } from "utils/common";
 
 const USER_ADDRESS = "0x8E05d1F687d12eBBAA704a9c614d425bc13A3643";
-const COLLECTION_ID = 2;
-const TOKEN_ID = 0;
+const COLLECTION_ID = 0;
 
 const func: DeployFunction = async (hre: HardhatRuntimeEnvironment): Promise<void> => {
   await callWithTimer(async () => {
@@ -25,13 +24,13 @@ const func: DeployFunction = async (hre: HardhatRuntimeEnvironment): Promise<voi
     const carBarContractFactory = <CarBarContract__factory>await ethers.getContractFactory("CarBarContract");
     const carBarContract = <CarBarContract>await carBarContractFactory.connect(admin).attach(contractAddress);
 
-    let tx = await carBarContract.transferToken(admin.address, USER_ADDRESS, COLLECTION_ID, TOKEN_ID);
-    console.log(`Call transferToken...`);
+    let tx = await carBarContract.safeTransferFrom(admin.address, USER_ADDRESS, COLLECTION_ID, 1, []);
+    console.log(`Call safeTransferFrom...`);
     await tx.wait();
-    console.log(`Token ${COLLECTION_ID}/${TOKEN_ID} was transfered`);
+    console.log(`Token of ${COLLECTION_ID} collection was safeTransfered`);
   });
 };
 
-func.tags = ["CarBarContract:sim"];
+func.tags = ["CarBarContract:transfer"];
 
 export default func;

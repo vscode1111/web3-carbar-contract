@@ -1,5 +1,5 @@
 import { loadFixture } from "@nomicfoundation/hardhat-network-helpers";
-import type { SignerWithAddress } from "@nomiclabs/hardhat-ethers/dist/src/signer-with-address";
+import { SignerWithAddress } from "@nomiclabs/hardhat-ethers/dist/src/signer-with-address";
 import { ethers } from "hardhat";
 
 import { shouldBehaveCorrectFetching } from "./CarBarContract.behavior.fetching";
@@ -13,6 +13,7 @@ describe("CarBarContract", function () {
     this.admin = signers[0];
     this.user1 = signers[1];
     this.user2 = signers[2];
+    this.shop = signers[3];
 
     this.loadFixture = loadFixture;
   });
@@ -25,6 +26,7 @@ describe("CarBarContract", function () {
       adminCarBarContract,
       user1CarBarContract,
       user2CarBarContract,
+      shopCarBarContract,
     } = await this.loadFixture(deployCarBarContractFixture);
     this.adminTestUSDT = adminTestUSDT;
     this.user1TestUSDT = user1TestUSDT;
@@ -32,6 +34,7 @@ describe("CarBarContract", function () {
     this.adminCarBarContract = adminCarBarContract;
     this.user1CarBarContract = user1CarBarContract;
     this.user2CarBarContract = user2CarBarContract;
+    this.shopCarBarContract = shopCarBarContract;
   });
 
   shouldBehaveCorrectFetching();

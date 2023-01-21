@@ -1,6 +1,6 @@
-import type { SignerWithAddress } from "@nomiclabs/hardhat-ethers/dist/src/signer-with-address";
+import { SignerWithAddress } from "@nomiclabs/hardhat-ethers/dist/src/signer-with-address";
 import { BigNumber } from "ethers";
-import type { CarBarContract } from "typechain-types/contracts/CarBarContract";
+import { CarBarContract } from "typechain-types/contracts/CarBarContract";
 import { TestUSDT } from "typechain-types/contracts/TestUSDT";
 
 type Fixture<T> = () => Promise<T>;
@@ -12,6 +12,7 @@ export interface ContextBase {
   adminCarBarContract: CarBarContract;
   user1CarBarContract: CarBarContract;
   user2CarBarContract: CarBarContract;
+  shopCarBarContract: CarBarContract;
 }
 
 declare module "mocha" {
@@ -19,6 +20,7 @@ declare module "mocha" {
     admin: SignerWithAddress;
     user1: SignerWithAddress;
     user2: SignerWithAddress;
+    shop: SignerWithAddress;
     loadFixture: <T>(fixture: Fixture<T>) => Promise<T>;
   }
 }
@@ -31,7 +33,6 @@ export interface Signers {
 
 export interface ICollectionItem {
   name: string;
-  url: string;
   tokenCount: number;
   price: BigNumber;
   expiryDate: number;

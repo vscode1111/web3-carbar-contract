@@ -3,8 +3,8 @@ import "@nomiclabs/hardhat-ethers";
 import "@openzeppelin/hardhat-upgrades";
 import { config as dotenvConfig } from "dotenv";
 import "hardhat-deploy";
-import type { HardhatUserConfig } from "hardhat/config";
-import type { NetworkUserConfig } from "hardhat/types";
+import { HardhatUserConfig } from "hardhat/config";
+import { NetworkUserConfig } from "hardhat/types";
 import { resolve } from "path";
 import "tsconfig-paths/register";
 
@@ -17,15 +17,19 @@ if (!providerUrl) {
   throw new Error("Please set your PROVIDER_URL in a .env file");
 }
 
-const metamaskPrivateKey = `0x${process.env.METAMASK_PRIVATE_KEY}`;
-if (metamaskPrivateKey.length < 3) {
-  throw new Error("Please set your METAMASK_PRIVATE_KEY in a .env file");
+const adminPrivateKey = `0x${process.env.ADMIN_PRIVATE_KEY}`;
+if (adminPrivateKey.length < 3) {
+  throw new Error("Please set your ADMIN_PRIVATE_KEY in a .env file");
+}
+const userPrivateKey = `0x${process.env.USER_PRIVATE_KEY}`;
+if (userPrivateKey.length < 3) {
+  throw new Error("Please set your USER_PRIVATE_KEY in a .env file");
 }
 
 function getChainConfig(): NetworkUserConfig {
   return {
     url: providerUrl,
-    accounts: [metamaskPrivateKey],
+    accounts: [adminPrivateKey, userPrivateKey],
   };
 }
 

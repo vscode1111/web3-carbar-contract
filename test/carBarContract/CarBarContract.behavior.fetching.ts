@@ -1,15 +1,16 @@
 import { expect } from "chai";
 import { toUnixTime } from "utils/common";
 
-import { checkToken, getCollectionName, getCollectionUrl, initCollections } from "./utils";
+import { checkToken, getCollectionName, initCollections } from "./utils";
 
 export function shouldBehaveCorrectFetching(): void {
   describe("fetching", () => {
     it("should return the correct URI once it's changed", async function () {
-      const testText = "http://20.68.212.46:8081/nft_json/0.json";
+      const testText = "http://www.test.com/nft_json/";
+      const tokenId = 0;
       await this.adminCarBarContract.setURI(testText);
-      const result = await this.adminCarBarContract.uri(0);
-      expect(result).to.equal(testText);
+      const result = await this.adminCarBarContract.uri(tokenId);
+      expect(result).to.equal(`${testText}${tokenId}.json`);
     });
 
     it("should return the correct collections and tokens", async function () {
@@ -32,8 +33,7 @@ export function shouldBehaveCorrectFetching(): void {
         expect(balance).to.eq(collection.tokenCount);
 
         expect(collection.collectionId).to.eq(i);
-        expect(collection.name).to.eq(getCollectionName(i));
-        expect(collection.url).to.eq(getCollectionUrl(i));
+        expect(collection.collectionName).to.eq(getCollectionName(i));
         expect(collection.tokenCount).to.eq(i + 1);
         expect(collection.price).to.eq(i + 2);
         expect(collection.expiryDate).to.eq(i + 3);
@@ -58,13 +58,12 @@ export function shouldBehaveCorrectFetching(): void {
 
       await initCollections(this.adminCarBarContract, collectionCount);
 
-      await this.adminCarBarContract.updateCollection(collectionId, getCollectionName(10), getCollectionUrl(11));
+      await this.adminCarBarContract.updateCollection(collectionId, getCollectionName(10));
 
       const collection = await this.adminCarBarContract.fetchCollection(collectionId);
 
       expect(collection.collectionId).to.eq(collectionId);
-      expect(collection.name).to.eq(getCollectionName(10));
-      expect(collection.url).to.eq(getCollectionUrl(11));
+      expect(collection.collectionName).to.eq(getCollectionName(10));
       expect(collection.tokenCount).to.eq(collectionId + 1);
       expect(collection.price).to.eq(collectionId + 2);
       expect(collection.expiryDate).to.eq(collectionId + 3);

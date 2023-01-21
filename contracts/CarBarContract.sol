@@ -10,6 +10,8 @@ import "@openzeppelin/contracts-upgradeable/security/ReentrancyGuardUpgradeable.
 import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 import "@openzeppelin/contracts-upgradeable/utils/StringsUpgradeable.sol";
 
+// import "hardhat/console.sol";
+
 contract CarBarContract is
     Initializable,
     ERC1155Upgradeable,
@@ -28,10 +30,13 @@ contract CarBarContract is
         _usdtToken = IERC20(usdtTokenAddress);
     }
 
+    string public name;
+    string public symbol;
+
     IERC20 private _usdtToken;
 
     uint8 public constant TOKEN_UNIT = 1;
-    uint32 public constant TIME_GAP = 72 * 3600;
+    uint32 public constant TIME_GAP = 72 hours;
 
     using CountersUpgradeable for CountersUpgradeable.Counter;
 
@@ -43,24 +48,28 @@ contract CarBarContract is
 
     struct CollectionItem {
         uint32 collectionId;
-        string name;
-        string url;
+        string collectionName;
         uint32 tokenCount;
         uint256 price;
         uint32 expiryDate;
+    }
+
+    enum Sold {
+        None,
+        Trasfer,
+        TokenSold
     }
 
     struct TokenItem {
         uint32 tokenId;
         address owner;
         uint32 expiryDate;
-        bool sold;
+        Sold sold;
     }
 
     event CollectionItemCreated(
         uint32 indexed tokenId,
         string name,
-        string url,
         uint32 tokenCount,
         uint256 price,
         uint256 expiryDate
@@ -74,6 +83,11 @@ contract CarBarContract is
         uint256 price,
         uint32 timestamp
     );
+
+    modifier onlyFilledCollection(uint32 collectionId) {
+        require(balanceOf(owner(), collectionId) >= 1, "The collection must have at least 1 available token");
+        _;
+    }
 
     modifier onlyActualCollection(uint32 collectionId) {
         CollectionItem memory collection = fetchCollection(collectionId);
@@ -97,20 +111,28 @@ contract CarBarContract is
         _;
     }
 
-    modifier onlyTokenOnwer(
-        address owner,
-        uint32 collectionId,
-        uint32 tokenId
-    ) {
+    modifier onlyTokenOnwer(uint32 collectionId, uint32 tokenId) {
         TokenItem memory token = fetchToken(collectionId, tokenId);
-        require(token.owner == owner, "You must be owner of this token");
+
+        require(
+            token.owner == _msgSender() || isApprovedForAll(token.owner, _msgSender()),
+            "You must be owner of this token or approved"
+        );
         _;
     }
 
     function _authorizeUpgrade(address newImplementation) internal override onlyOwner {}
 
-    function setURI(string memory newuri) external onlyOwner {
-        _setURI(newuri);
+    function setName(string memory newName) public onlyOwner {
+        name = newName;
+    }
+
+    function setSymbol(string memory newSymbol) public onlyOwner {
+        symbol = newSymbol;
+    }
+
+    function setURI(string memory newUri) external onlyOwner {
+        _setURI(newUri);
     }
 
     function getUSDTaddress() external view returns (address) {
@@ -118,15 +140,14 @@ contract CarBarContract is
     }
 
     function createCollection(
-        string memory name,
-        string memory url,
+        string memory collectionName,
         uint32 tokenCount,
         uint256 price,
         uint32 expiryDate
     ) external onlyOwner returns (uint32) {
         uint32 collectionId = uint32(_collectionCounter.current());
         _mint(_msgSender(), collectionId, tokenCount * TOKEN_UNIT, "");
-        createCollectionItem(collectionId, name, url, tokenCount, price, expiryDate);
+        createCollectionItem(collectionId, collectionName, tokenCount, price, expiryDate);
         _createItemTokens(collectionId, tokenCount);
         _collectionCounter.increment();
         return collectionId;
@@ -134,17 +155,14 @@ contract CarBarContract is
 
     function updateCollection(
         uint32 collectionId,
-        string memory name,
-        string memory url
+        string memory collectionName
     ) external onlyOwner returns (CollectionItem memory) {
         CollectionItem memory collection = fetchCollection(collectionId);
-        collection.name = name;
-        collection.url = url;
+        collection.collectionName = collectionName;
         return
             createCollectionItem(
                 collection.collectionId,
-                collection.name,
-                collection.url,
+                collection.collectionName,
                 collection.tokenCount,
                 collection.price,
                 collection.expiryDate
@@ -153,15 +171,14 @@ contract CarBarContract is
 
     function createCollectionItem(
         uint32 collectionId,
-        string memory name,
-        string memory url,
+        string memory collectionName,
         uint32 tokenCount,
         uint256 price,
         uint32 expiryDate
     ) private returns (CollectionItem memory) {
-        require(price > 0, "Price must be at least 1");
-        _collectionItems[collectionId] = CollectionItem(collectionId, name, url, tokenCount, price, expiryDate);
-        emit CollectionItemCreated(collectionId, name, url, tokenCount, price, expiryDate);
+        require(price > 0, "Price must be greater than zero");
+        _collectionItems[collectionId] = CollectionItem(collectionId, collectionName, tokenCount, price, expiryDate);
+        emit CollectionItemCreated(collectionId, collectionName, tokenCount, price, expiryDate);
         return _collectionItems[collectionId];
     }
 
@@ -170,11 +187,8 @@ contract CarBarContract is
     }
 
     function _createItemTokens(uint32 collectionId, uint32 tokenCount) private {
-        address owner = _msgSender();
-        uint32 expiryDate = 0;
-        bool sold = false;
         for (uint32 i = 0; i < tokenCount; i++) {
-            createTokenItem(collectionId, i, owner, expiryDate, sold);
+            createTokenItem(collectionId, i, _msgSender(), 0, Sold.None);
         }
     }
 
@@ -183,7 +197,7 @@ contract CarBarContract is
         uint32 tokenId,
         address owner,
         uint32 expiryDate,
-        bool sold
+        Sold sold
     ) private returns (TokenItem memory) {
         TokenItem memory token = TokenItem(tokenId, owner, expiryDate, sold);
         _tokenItems[collectionId][tokenId] = token;
@@ -200,7 +214,9 @@ contract CarBarContract is
         return token;
     }
 
-    function buyToken(uint32 collectionId) external nonReentrant onlyActualCollection(collectionId) {
+    function buyToken(
+        uint32 collectionId
+    ) external nonReentrant onlyFilledCollection(collectionId) onlyActualCollection(collectionId) {
         CollectionItem memory collection = fetchCollection(collectionId);
         uint256 amount = collection.price;
         address owner = address(owner());
@@ -208,18 +224,16 @@ contract CarBarContract is
 
         require(_usdtToken.allowance(sender, address(this)) >= amount, "User must allow to use of funds");
         require(_usdtToken.balanceOf(sender) >= amount, "User must have funds");
-        require(balanceOf(owner, collectionId) >= 1, "The collection must have at least 1 available token");
 
         CountersUpgradeable.Counter storage counter = _collectionCounters[collectionId];
-
         uint32 tokenId = uint32(counter.current());
         TokenItem storage token = _tokenItems[collectionId][tokenId];
-
         _transferToken(token.owner, sender, collectionId, tokenId);
-
         counter.increment();
 
         _usdtToken.transferFrom(sender, address(this), amount);
+
+        token.sold = Sold.TokenSold;
 
         emit TokenSold(collectionId, tokenId, owner, sender, amount, uint32(block.timestamp));
     }
@@ -232,7 +246,7 @@ contract CarBarContract is
     ) private returns (TokenItem memory) {
         TokenItem storage token = _tokenItems[collectionId][tokenId];
         token.owner = to;
-        token.sold = true;
+        token.sold = Sold.Trasfer;
         _safeTransferFrom(from, to, collectionId, TOKEN_UNIT, "");
         return token;
     }
@@ -244,7 +258,7 @@ contract CarBarContract is
         uint32 tokenId
     )
         public
-        onlyTokenOnwer(from, collectionId, tokenId)
+        onlyTokenOnwer(collectionId, tokenId)
         onlyActualCollection(collectionId)
         onlyActualToken(collectionId, tokenId, TIME_GAP)
         returns (TokenItem memory)
@@ -254,7 +268,15 @@ contract CarBarContract is
 
     function safeTransferFrom(address from, address to, uint256 id, uint256 amount, bytes memory data) public override {
         require(amount == TOKEN_UNIT, "Amount must be 1");
-        transferToken(from, to, uint32(id), uint32(bytes4(data)));
+
+        if (data.length == 0) {
+            CountersUpgradeable.Counter storage counter = _collectionCounters[uint32(id)];
+            uint32 tokenId = uint32(counter.current());
+            transferToken(from, to, uint32(id), tokenId);
+            counter.increment();
+        } else {
+            transferToken(from, to, uint32(id), uint32(bytes4(data)));
+        }
     }
 
     function safeBatchTransferFrom(
@@ -310,7 +332,7 @@ contract CarBarContract is
         return _tokenItems[collectionId][tokenId];
     }
 
-    function uri(uint256 tokenId) public pure override returns (string memory) {
-        return string.concat("http://20.68.212.46:8081/nft_json/", tokenId.toString(), ".json");
+    function uri(uint256 tokenId) public view override returns (string memory) {
+        return string.concat(super.uri(tokenId), tokenId.toString(), ".json");
     }
 }

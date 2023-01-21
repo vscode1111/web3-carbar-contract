@@ -1,7 +1,7 @@
 import { ethers, upgrades } from "hardhat";
 import { DeployFunction } from "hardhat-deploy/types";
-import type { TestUSDT } from "typechain-types/contracts/TestUSDT";
-import type { TestUSDT__factory } from "typechain-types/factories/contracts/TestUSDT__factory";
+import { TestUSDT } from "typechain-types/contracts/TestUSDT";
+import { TestUSDT__factory } from "typechain-types/factories/contracts/TestUSDT__factory";
 import { callWithTimer } from "utils/common";
 
 const func: DeployFunction = async (): Promise<void> => {
