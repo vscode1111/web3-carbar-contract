@@ -288,17 +288,18 @@ contract CarBarContract is
         uint256 amount,
         bytes memory /*data*/
     ) public override {
-        require(amount == TOKEN_UNIT, "Amount must be 1");
-
         uint32 collectionId = uint32(id);
-        (bool success, uint32 tokenId) = findValidFreeId(from, collectionId);
 
-        if (!success) {
-            revert("Couldn't find valid free id");
+        for (uint32 i = 0; i < amount; i++) {
+            (bool success, uint32 tokenId) = findValidFreeId(from, collectionId);
+
+            if (!success) {
+                revert("Couldn't find valid free id");
+            }
+
+            transferToken(from, to, collectionId, tokenId);
+            transferFreeId(from, to, collectionId, tokenId);
         }
-
-        transferToken(from, to, collectionId, tokenId);
-        transferFreeId(from, to, collectionId, tokenId);
     }
 
     function safeBatchTransferFrom(

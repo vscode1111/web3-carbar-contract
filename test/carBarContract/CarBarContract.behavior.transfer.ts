@@ -97,11 +97,25 @@ export function shouldBehaveCorrectTransfer(): void {
       expect(tokens[1].sold).to.equal(Sold.None);
     });
 
-    it("should throw error when user1 tries to call safeTransferFrom with incorrect amount", async function () {
-      await initCollectionsRealWithBuying(this);
-      await expect(
-        this.user1CarBarContract.safeTransferFrom(this.user1.address, this.user2.address, 0, 2, testValue.emptyData),
-      ).to.be.rejectedWith(vmEsceptionText(errorMessage.amountMustBe1));
+    it("should correct call safeTransferFrom with amount 2", async function () {
+      await initCollectionsRealWithBuying(this, 4);
+      await this.adminCarBarContract.safeTransferFrom(
+        this.admin.address,
+        this.user2.address,
+        0,
+        2,
+        testValue.emptyData,
+      );
+
+      let tokens = await this.adminCarBarContract.fetchTokens(testValue.collectionId0);
+      expect(tokens[0].owner).to.equal(this.user1.address);
+      expect(tokens[0].sold).to.equal(Sold.TokenSold);
+      expect(tokens[1].owner).to.equal(this.user2.address);
+      expect(tokens[1].sold).to.equal(Sold.Transfer);
+      expect(tokens[2].owner).to.equal(this.user2.address);
+      expect(tokens[2].sold).to.equal(Sold.Transfer);
+      expect(tokens[3].owner).to.equal(this.admin.address);
+      expect(tokens[3].sold).to.equal(Sold.None);
     });
 
     it("should throw error when user1 tries to call safeBatchTransferFrom with incorrect length of ids and amounts", async function () {
@@ -128,19 +142,6 @@ export function shouldBehaveCorrectTransfer(): void {
           testValue.emptyData,
         ),
       ).to.be.rejectedWith(vmEsceptionText(errorMessage.noFreeTokenId));
-    });
-
-    it("should throw error when user1 tries to call safeBatchTransferFrom with incorrect array of amounts", async function () {
-      await initCollectionsRealWithBuying(this);
-      await expect(
-        this.adminCarBarContract.safeBatchTransferFrom(
-          this.user1.address,
-          this.user2.address,
-          [0],
-          [2],
-          testValue.emptyData,
-        ),
-      ).to.be.rejectedWith(vmEsceptionText(errorMessage.amountMustBe1));
     });
 
     it("should procced safeTransfer with update by admin", async function () {

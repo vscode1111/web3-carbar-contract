@@ -17,7 +17,7 @@ const func: DeployFunction = async (hre: HardhatRuntimeEnvironment): Promise<voi
     } = hre;
     const contractAddress = CONTRACTS.CAR_BAR[name as keyof DeployNetworks];
 
-    console.log(`CarBarContract [${contractAddress}] starts simulation...`);
+    console.log(`CarBarContract [${contractAddress}] starts transfering...`);
 
     const [admin] = await hre.ethers.getSigners();
 
@@ -28,7 +28,7 @@ const func: DeployFunction = async (hre: HardhatRuntimeEnvironment): Promise<voi
       admin.address,
       deployValue.userAddress,
       deployValue.collectionId,
-      1,
+      2,
       testValue.emptyData,
     );
     console.log(`Call safeTransferFrom...`);

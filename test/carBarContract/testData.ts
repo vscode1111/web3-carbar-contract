@@ -60,7 +60,6 @@ export function getTestCollections(tokenCount = TOKEN_COUNT, expiryDate = testVa
 export const errorMessage = {
   ownable: "Ownable: caller is not the owner",
   youMustBeOwnerOrApproved: "You must be owner of this token or approved",
-  amountMustBe1: "Amount must be 1",
   priceMustBeGreaterZero: "Price must be greater than zero",
   userMustAllowToUseFunds: "User must allow to use of funds",
   userMustHaveFunds: "User must have funds",
