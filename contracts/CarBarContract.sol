@@ -9,15 +9,17 @@ import "@openzeppelin/contracts-upgradeable/proxy/utils/UUPSUpgradeable.sol";
 import "@openzeppelin/contracts-upgradeable/security/ReentrancyGuardUpgradeable.sol";
 import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 import "@openzeppelin/contracts-upgradeable/utils/StringsUpgradeable.sol";
+import "./AddressItems.sol";
 
-// import "hardhat/console.sol";
+import "hardhat/console.sol";
 
 contract CarBarContract is
     Initializable,
     ERC1155Upgradeable,
     OwnableUpgradeable,
     UUPSUpgradeable,
-    ReentrancyGuardUpgradeable
+    ReentrancyGuardUpgradeable,
+    AddressItems
 {
     using StringsUpgradeable for uint256;
 
@@ -43,7 +45,6 @@ contract CarBarContract is
     CountersUpgradeable.Counter private _collectionCounter;
 
     mapping(uint32 => CollectionItem) private _collectionItems;
-    mapping(uint32 => CountersUpgradeable.Counter) private _collectionCounters;
     mapping(uint32 => mapping(uint32 => TokenItem)) private _tokenItems;
 
     struct CollectionItem {
@@ -56,7 +57,7 @@ contract CarBarContract is
 
     enum Sold {
         None,
-        Trasfer,
+        Transfer,
         TokenSold
     }
 
@@ -98,6 +99,11 @@ contract CarBarContract is
         _;
     }
 
+    function checkActualToken(uint32 collectionId, uint32 tokenId, uint32 timeOffset) private view returns (bool) {
+        TokenItem memory token = fetchToken(collectionId, tokenId);
+        return token.expiryDate == 0 || block.timestamp <= token.expiryDate - timeOffset;
+    }
+
     modifier onlyActualToken(
         uint32 collectionId,
         uint32 tokenId,
@@ -105,7 +111,7 @@ contract CarBarContract is
     ) {
         TokenItem memory token = fetchToken(collectionId, tokenId);
         require(
-            token.expiryDate == 0 || block.timestamp <= token.expiryDate - timeOffset,
+            checkActualToken(collectionId, tokenId, timeOffset),
             "Token expiration must be more than a certain period from the current time"
         );
         _;
@@ -148,7 +154,7 @@ contract CarBarContract is
         uint32 collectionId = uint32(_collectionCounter.current());
         _mint(_msgSender(), collectionId, tokenCount * TOKEN_UNIT, "");
         createCollectionItem(collectionId, collectionName, tokenCount, price, expiryDate);
-        _createItemTokens(collectionId, tokenCount);
+        _createTokens(collectionId, tokenCount);
         _collectionCounter.increment();
         return collectionId;
     }
@@ -157,16 +163,9 @@ contract CarBarContract is
         uint32 collectionId,
         string memory collectionName
     ) external onlyOwner returns (CollectionItem memory) {
-        CollectionItem memory collection = fetchCollection(collectionId);
+        CollectionItem storage collection = _collectionItems[collectionId];
         collection.collectionName = collectionName;
-        return
-            createCollectionItem(
-                collection.collectionId,
-                collection.collectionName,
-                collection.tokenCount,
-                collection.price,
-                collection.expiryDate
-            );
+        return collection;
     }
 
     function createCollectionItem(
@@ -186,22 +185,13 @@ contract CarBarContract is
         return uint32(_collectionCounter.current());
     }
 
-    function _createItemTokens(uint32 collectionId, uint32 tokenCount) private {
+    function _createTokens(uint32 collectionId, uint32 tokenCount) private {
+        address owner = _msgSender();
         for (uint32 i = 0; i < tokenCount; i++) {
-            createTokenItem(collectionId, i, _msgSender(), 0, Sold.None);
+            TokenItem memory token = TokenItem(i, owner, 0, Sold.None);
+            _tokenItems[collectionId][i] = token;
+            pushFreeId(owner, collectionId, i);
         }
-    }
-
-    function createTokenItem(
-        uint32 collectionId,
-        uint32 tokenId,
-        address owner,
-        uint32 expiryDate,
-        Sold sold
-    ) private returns (TokenItem memory) {
-        TokenItem memory token = TokenItem(tokenId, owner, expiryDate, sold);
-        _tokenItems[collectionId][tokenId] = token;
-        return token;
     }
 
     function updateToken(
@@ -211,6 +201,13 @@ contract CarBarContract is
     ) external onlyOwner returns (TokenItem memory) {
         TokenItem storage token = _tokenItems[collectionId][tokenId];
         token.expiryDate = expiryDate;
+
+        if (expiryDate == 0) {
+            pushFreeId(token.owner, collectionId, tokenId);
+        } else {
+            // removeFreeIdByTokenId(token.owner, collectionId, tokenId);
+        }
+
         return token;
     }
 
@@ -225,11 +222,12 @@ contract CarBarContract is
         require(_usdtToken.allowance(sender, address(this)) >= amount, "User must allow to use of funds");
         require(_usdtToken.balanceOf(sender) >= amount, "User must have funds");
 
-        CountersUpgradeable.Counter storage counter = _collectionCounters[collectionId];
-        uint32 tokenId = uint32(counter.current());
+        uint32 tokenId = getFreeId(owner, collectionId, 0);
+
         TokenItem storage token = _tokenItems[collectionId][tokenId];
         _transferToken(token.owner, sender, collectionId, tokenId);
-        counter.increment();
+
+        transferFreeId(owner, sender, collectionId, tokenId);
 
         _usdtToken.transferFrom(sender, address(this), amount);
 
@@ -246,7 +244,7 @@ contract CarBarContract is
     ) private returns (TokenItem memory) {
         TokenItem storage token = _tokenItems[collectionId][tokenId];
         token.owner = to;
-        token.sold = Sold.Trasfer;
+        token.sold = Sold.Transfer;
         _safeTransferFrom(from, to, collectionId, TOKEN_UNIT, "");
         return token;
     }
@@ -266,17 +264,41 @@ contract CarBarContract is
         return _transferToken(from, to, collectionId, tokenId);
     }
 
-    function safeTransferFrom(address from, address to, uint256 id, uint256 amount, bytes memory data) public override {
+    function findValidFreeId(
+        address user,
+        uint32 collectionId
+    ) private view onlyFilledFreeIds(user, collectionId, 0) returns (bool, uint32) {
+        uint32[] memory freeIds = fetchFreeIds(user, collectionId);
+        uint32 tokenId;
+
+        for (uint32 i = 0; i < freeIds.length; i++) {
+            tokenId = freeIds[i];
+            if (checkActualToken(collectionId, tokenId, TIME_GAP)) {
+                return (true, tokenId);
+            }
+        }
+
+        return (false, 0);
+    }
+
+    function safeTransferFrom(
+        address from,
+        address to,
+        uint256 id,
+        uint256 amount,
+        bytes memory /*data*/
+    ) public override {
         require(amount == TOKEN_UNIT, "Amount must be 1");
 
-        if (data.length == 0) {
-            CountersUpgradeable.Counter storage counter = _collectionCounters[uint32(id)];
-            uint32 tokenId = uint32(counter.current());
-            transferToken(from, to, uint32(id), tokenId);
-            counter.increment();
-        } else {
-            transferToken(from, to, uint32(id), uint32(bytes4(data)));
+        uint32 collectionId = uint32(id);
+        (bool success, uint32 tokenId) = findValidFreeId(from, collectionId);
+
+        if (!success) {
+            revert("Couldn't find valid free id");
         }
+
+        transferToken(from, to, collectionId, tokenId);
+        transferFreeId(from, to, collectionId, tokenId);
     }
 
     function safeBatchTransferFrom(
@@ -286,14 +308,10 @@ contract CarBarContract is
         uint256[] memory amounts,
         bytes memory data
     ) public override {
-        require(
-            ids.length == amounts.length && data.length == amounts.length * 4,
-            "Length of ids, amounts and data should be the correct"
-        );
+        require(ids.length == amounts.length, "Length of ids, amounts should be the correct");
+
         for (uint32 i = 0; i < ids.length; i++) {
-            uint32 offset = i * 4;
-            bytes memory _data = bytes.concat(data[0 + offset], data[1 + offset], data[2 + offset], data[3 + offset]);
-            safeTransferFrom(from, to, ids[i], amounts[i], _data);
+            safeTransferFrom(from, to, ids[i], amounts[i], data);
         }
     }
 

@@ -14,7 +14,8 @@ export const CONTRACTS: Record<CONTRACT_LIST, DeployNetworks> = {
     mumbai: "0x4996FC03735B44b53531530a02A0EDd7C6e19b69",
     // polygon: "0xaB438A70A0d2b7D2AeD0dd08c3E65521b363e326", //old prod
     // polygon: "0xdF7D00eb2d9ad2AE9c6A70a6f02CdD5688f7Ad25", //new prod
-    polygon: "0xfE51b932E4DE280afcf6CdB9Cf3CBc14aA40b9DE", //new prod2
+    // polygon: "0xfE51b932E4DE280afcf6CdB9Cf3CBc14aA40b9DE", //new prod2
+    polygon: "0x26ab88bcA08DbC6A1Fd54deDAc45cB8757E5Ea44", //new prod3
   },
 };
 

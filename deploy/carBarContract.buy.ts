@@ -1,7 +1,7 @@
 import { CONTRACTS, TOKENS } from "constants/addresses";
 import { DeployFunction } from "hardhat-deploy/types";
 import { HardhatRuntimeEnvironment } from "hardhat/types";
-import { testValue } from "test/carBarContract/data";
+import { testValue } from "test/carBarContract/testData";
 import { CarBarContract } from "typechain-types/contracts/CarBarContract";
 import { TestUSDT } from "typechain-types/contracts/TestUSDT";
 import { CarBarContract__factory } from "typechain-types/factories/contracts/CarBarContract__factory";
@@ -9,7 +9,7 @@ import { TestUSDT__factory } from "typechain-types/factories/contracts/TestUSDT_
 import { DeployNetworks } from "types/common";
 import { callWithTimer } from "utils/common";
 
-const COLLECTION_ID = 0;
+import { deployValue } from "./deployData";
 
 const func: DeployFunction = async (hre: HardhatRuntimeEnvironment): Promise<void> => {
   await callWithTimer(async () => {
@@ -36,10 +36,10 @@ const func: DeployFunction = async (hre: HardhatRuntimeEnvironment): Promise<voi
     const carBarContractFactory = <CarBarContract__factory>await ethers.getContractFactory("CarBarContract");
     const carBarContract = <CarBarContract>await carBarContractFactory.connect(user).attach(carBarAddress);
 
-    tx = await carBarContract.buyToken(COLLECTION_ID);
+    tx = await carBarContract.buyToken(deployValue.collectionId);
     console.log(`Call buyToken...`);
     await tx.wait();
-    console.log(`Token ${COLLECTION_ID} was bought`);
+    console.log(`Token ${deployValue.collectionId} was bought`);
   });
 };
 

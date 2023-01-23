@@ -4,7 +4,7 @@ import { Context } from "mocha";
 import { CarBarContract } from "typechain-types/contracts/CarBarContract";
 import { StringNumber } from "types/common";
 
-import { Sold, TOKEN_COUNT, getTestCollections, testValue } from "./data";
+import { Sold, TOKEN_COUNT, getTestCollections, testValue } from "./testData";
 
 export function getCollectionName(name: StringNumber) {
   return `collection ${name}`;

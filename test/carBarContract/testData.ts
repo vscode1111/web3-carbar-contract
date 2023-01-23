@@ -1,3 +1,4 @@
+import dayjs from "dayjs";
 import { BigNumber } from "ethers";
 import { toUnixTime, toWei } from "utils/common";
 
@@ -13,12 +14,15 @@ const PRICE_DIV = BigNumber.from(PROD_DATA ? "1" : "1000");
 
 export const testValue = {
   tokenCount: 5,
-  collectionId: 0,
-  tokenId: 0,
+  collectionId0: 0,
+  collectionId1: 1,
+  collectionId2: 2,
+  tokenId0: 0,
+  tokenId1: 1,
   zero: toWei(0),
   price0: toWei(100, TUSDT_DECIMALS).div(PRICE_DIV),
   price1: toWei(160, TUSDT_DECIMALS).div(PRICE_DIV),
-  price2: toWei(100, TUSDT_DECIMALS).div(PRICE_DIV),
+  price2: toWei(160, TUSDT_DECIMALS).div(PRICE_DIV),
   price01: toWei(100 + 160, TUSDT_DECIMALS).div(PRICE_DIV),
   userInitialBalance0: toWei(1000, TUSDT_DECIMALS).div(PRICE_DIV),
   userInitialBalance1: toWei(2000, TUSDT_DECIMALS).div(PRICE_DIV),
@@ -26,6 +30,8 @@ export const testValue = {
   userInitialBalance01: toWei(1000 + 2000, TUSDT_DECIMALS).div(PRICE_DIV),
   userInitialBalance012: toWei(1000 + 2000 + 3000, TUSDT_DECIMALS).div(PRICE_DIV),
   endTime2023: toUnixTime(PROD_DATA ? "2023-12-31 23:59:59" : "2023-04-30 23:59:59"),
+  emptyData: [],
+  newExpiryDate: dayjs().add(-1, "minute").toDate(),
 };
 
 export function getTestCollections(tokenCount = TOKEN_COUNT, expiryDate = testValue.endTime2023): ICollectionItem[] {
@@ -62,11 +68,14 @@ export const errorMessage = {
   collectionExpirationMustBeGreater: "Collection expiration must be greater than the current time",
   tokenExpirationMustBeMore: "Token expiration must be more than a certain period from the current time",
   contractMustHaveSufficientFunds: "Contract must have sufficient funds",
-  dataShouldBeCorrect: "Length of ids, amounts and data should be the correct",
+  dataShouldBeCorrect: "Length of ids, amounts should be the correct",
+  insufficientBalance: "ERC1155: insufficient balance for transfer",
+  noFreeTokenId: "There is no free tokenId",
+  couldntFindValidFreeId: "Couldn't find valid free id",
 };
 
 export enum Sold {
   None,
-  Trasfer,
+  Transfer,
   TokenSold,
 }

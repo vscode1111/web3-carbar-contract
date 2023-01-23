@@ -1,9 +1,8 @@
 import { expect } from "chai";
-import dayjs from "dayjs";
 import { TokenSoldEvent } from "typechain-types/contracts/CarBarContract";
 import { toUnixTime } from "utils/common";
 
-import { Sold, errorMessage, testValue } from "./data";
+import { Sold, errorMessage, testValue } from "./testData";
 import { initCollectionsReal, initCollectionsRealWithBuying, vmEsceptionText } from "./utils";
 
 export function shouldBehaveCorrectPayment(): void {
@@ -32,14 +31,12 @@ export function shouldBehaveCorrectPayment(): void {
     });
 
     it("should procced the payment of the token by the user", async function () {
-      const collectionIdTest = 0;
-
       await this.adminTestUSDT.mint(this.user1.address, testValue.userInitialBalance0);
       await initCollectionsReal(this.adminCarBarContract);
 
       await this.user1TestUSDT.approve(this.adminCarBarContract.address, testValue.price0);
 
-      const tx = await this.user1CarBarContract.buyToken(collectionIdTest);
+      const tx = await this.user1CarBarContract.buyToken(testValue.collectionId0);
       const receipt = await tx.wait();
 
       const tokenSoldEvent = receipt.events?.find((item) => item.event === "TokenSold") as TokenSoldEvent;
@@ -50,7 +47,7 @@ export function shouldBehaveCorrectPayment(): void {
 
       const now = Math.round(new Date().getTime() / 1000);
 
-      expect(collectionId).to.be.equal(collectionIdTest);
+      expect(collectionId).to.be.equal(testValue.collectionId0);
       expect(tokenId).to.be.equal(0);
       expect(seller).to.be.equal(this.admin.address);
       expect(owner).to.be.equal(this.user1.address);
@@ -158,20 +155,18 @@ export function shouldBehaveCorrectPayment(): void {
     });
 
     it("should procced the payment of the token by the user1 and user2", async function () {
-      const tokenCount = 5;
-      const collectionId0 = 0;
-      const collectionId1 = 1;
-
       await this.adminTestUSDT.mint(this.user1.address, testValue.userInitialBalance0);
       await this.user1TestUSDT.approve(this.adminCarBarContract.address, testValue.price01);
       await this.adminTestUSDT.mint(this.user2.address, testValue.userInitialBalance0);
       await this.user2TestUSDT.approve(this.adminCarBarContract.address, testValue.price01);
-      await initCollectionsReal(this.adminCarBarContract, tokenCount);
+      await initCollectionsReal(this.adminCarBarContract, testValue.tokenCount);
 
-      expect(await this.adminCarBarContract.balanceOf(this.admin.address, collectionId0)).to.equal(tokenCount);
+      expect(await this.adminCarBarContract.balanceOf(this.admin.address, testValue.collectionId0)).to.equal(
+        testValue.tokenCount,
+      );
 
       //Check initial state of collection #0
-      let tokens = await this.adminCarBarContract.fetchTokens(collectionId0);
+      let tokens = await this.adminCarBarContract.fetchTokens(testValue.collectionId0);
       expect(tokens[0].owner).to.equal(this.admin.address);
       expect(tokens[0].sold).to.equal(Sold.None);
       expect(tokens[1].owner).to.equal(this.admin.address);
@@ -179,7 +174,7 @@ export function shouldBehaveCorrectPayment(): void {
       expect(tokens[2].owner).to.equal(this.admin.address);
       expect(tokens[2].sold).to.equal(Sold.None);
       //Check initial state of collection #1
-      tokens = await this.adminCarBarContract.fetchTokens(collectionId1);
+      tokens = await this.adminCarBarContract.fetchTokens(testValue.collectionId1);
       expect(tokens[0].owner).to.equal(this.admin.address);
       expect(tokens[0].sold).to.equal(Sold.None);
       expect(tokens[1].owner).to.equal(this.admin.address);
@@ -187,34 +182,63 @@ export function shouldBehaveCorrectPayment(): void {
       expect(tokens[2].owner).to.equal(this.admin.address);
       expect(tokens[2].sold).to.equal(Sold.None);
 
+      let freeIds = await this.adminCarBarContract.fetchFreeIds(this.admin.address, testValue.collectionId0);
+      expect(freeIds.length).to.equal(testValue.tokenCount);
+      expect(freeIds[0]).to.equal(0);
+      expect(freeIds[1]).to.equal(1);
+      expect(freeIds[2]).to.equal(2);
+
       //User1 buys token of collection #0
-      await this.user1CarBarContract.buyToken(collectionId0);
-      tokens = await this.adminCarBarContract.fetchTokens(collectionId0);
+      await this.user1CarBarContract.buyToken(testValue.collectionId0);
+      freeIds = await this.adminCarBarContract.fetchFreeIds(this.admin.address, testValue.collectionId0);
+      expect(freeIds.length).to.equal(testValue.tokenCount - 1);
+      expect(freeIds[0]).to.equal(1);
+      expect(freeIds[1]).to.equal(2);
+      expect(freeIds[2]).to.equal(3);
+      freeIds = await this.adminCarBarContract.fetchFreeIds(this.user1.address, testValue.collectionId0);
+      expect(freeIds.length).to.equal(1);
+      expect(freeIds[0]).to.equal(0);
+
+      tokens = await this.adminCarBarContract.fetchTokens(testValue.collectionId0);
       expect(tokens[0].owner).to.equal(this.user1.address);
       expect(tokens[0].sold).to.equal(Sold.TokenSold);
       expect(tokens[1].owner).to.equal(this.admin.address);
       expect(tokens[1].sold).to.equal(Sold.None);
       expect(tokens[2].owner).to.equal(this.admin.address);
       expect(tokens[2].sold).to.equal(Sold.None);
-      expect(await this.adminCarBarContract.balanceOf(this.admin.address, collectionId0)).to.equal(tokenCount - 1);
-      expect(await this.adminCarBarContract.balanceOf(this.user1.address, collectionId0)).to.equal(1);
-      expect(await this.adminCarBarContract.balanceOf(this.user2.address, collectionId0)).to.equal(testValue.zero);
+      expect(await this.adminCarBarContract.balanceOf(this.admin.address, testValue.collectionId0)).to.equal(
+        testValue.tokenCount - 1,
+      );
+      expect(await this.adminCarBarContract.balanceOf(this.user1.address, testValue.collectionId0)).to.equal(1);
+      expect(await this.adminCarBarContract.balanceOf(this.user2.address, testValue.collectionId0)).to.equal(
+        testValue.zero,
+      );
 
       //User2 buys token of collection #0
-      await this.user2CarBarContract.buyToken(collectionId0);
-      tokens = await this.adminCarBarContract.fetchTokens(collectionId0);
+      await this.user2CarBarContract.buyToken(testValue.collectionId0);
+      freeIds = await this.adminCarBarContract.fetchFreeIds(this.admin.address, testValue.collectionId0);
+      expect(freeIds.length).to.equal(testValue.tokenCount - 2);
+      expect(freeIds[0]).to.equal(2);
+      expect(freeIds[1]).to.equal(3);
+      expect(freeIds[2]).to.equal(4);
+      freeIds = await this.adminCarBarContract.fetchFreeIds(this.user2.address, testValue.collectionId0);
+      expect(freeIds.length).to.equal(1);
+      expect(freeIds[0]).to.equal(1);
+      tokens = await this.adminCarBarContract.fetchTokens(testValue.collectionId0);
       expect(tokens[0].owner).to.equal(this.user1.address);
       expect(tokens[0].sold).to.equal(Sold.TokenSold);
       expect(tokens[1].owner).to.equal(this.user2.address);
       expect(tokens[1].sold).to.equal(Sold.TokenSold);
       expect(tokens[2].owner).to.equal(this.admin.address);
       expect(tokens[2].sold).to.equal(Sold.None);
-      expect(await this.adminCarBarContract.balanceOf(this.admin.address, collectionId0)).to.equal(tokenCount - 2);
-      expect(await this.adminCarBarContract.balanceOf(this.user1.address, collectionId0)).to.equal(1);
-      expect(await this.adminCarBarContract.balanceOf(this.user2.address, collectionId0)).to.equal(1);
+      expect(await this.adminCarBarContract.balanceOf(this.admin.address, testValue.collectionId0)).to.equal(
+        testValue.tokenCount - 2,
+      );
+      expect(await this.adminCarBarContract.balanceOf(this.user1.address, testValue.collectionId0)).to.equal(1);
+      expect(await this.adminCarBarContract.balanceOf(this.user2.address, testValue.collectionId0)).to.equal(1);
 
       //Check initial state of collection #1
-      tokens = await this.adminCarBarContract.fetchTokens(collectionId1);
+      tokens = await this.adminCarBarContract.fetchTokens(testValue.collectionId1);
       expect(tokens[0].owner).to.equal(this.admin.address);
       expect(tokens[0].sold).to.equal(Sold.None);
       expect(tokens[1].owner).to.equal(this.admin.address);
@@ -223,30 +247,36 @@ export function shouldBehaveCorrectPayment(): void {
       expect(tokens[2].sold).to.equal(Sold.None);
 
       //User1 buys token of collection #1
-      await this.user1CarBarContract.buyToken(collectionId1);
-      tokens = await this.adminCarBarContract.fetchTokens(collectionId1);
+      await this.user1CarBarContract.buyToken(testValue.collectionId1);
+      tokens = await this.adminCarBarContract.fetchTokens(testValue.collectionId1);
       expect(tokens[0].owner).to.equal(this.user1.address);
       expect(tokens[0].sold).to.equal(Sold.TokenSold);
       expect(tokens[1].owner).to.equal(this.admin.address);
       expect(tokens[1].sold).to.equal(Sold.None);
       expect(tokens[2].owner).to.equal(this.admin.address);
       expect(tokens[2].sold).to.equal(Sold.None);
-      expect(await this.adminCarBarContract.balanceOf(this.admin.address, collectionId1)).to.equal(tokenCount - 1);
-      expect(await this.adminCarBarContract.balanceOf(this.user1.address, collectionId1)).to.equal(1);
-      expect(await this.adminCarBarContract.balanceOf(this.user2.address, collectionId1)).to.equal(testValue.zero);
+      expect(await this.adminCarBarContract.balanceOf(this.admin.address, testValue.collectionId1)).to.equal(
+        testValue.tokenCount - 1,
+      );
+      expect(await this.adminCarBarContract.balanceOf(this.user1.address, testValue.collectionId1)).to.equal(1);
+      expect(await this.adminCarBarContract.balanceOf(this.user2.address, testValue.collectionId1)).to.equal(
+        testValue.zero,
+      );
 
       //User2 buys token of collection #0
-      await this.user2CarBarContract.buyToken(collectionId1);
-      tokens = await this.adminCarBarContract.fetchTokens(collectionId1);
+      await this.user2CarBarContract.buyToken(testValue.collectionId1);
+      tokens = await this.adminCarBarContract.fetchTokens(testValue.collectionId1);
       expect(tokens[0].owner).to.equal(this.user1.address);
       expect(tokens[0].sold).to.equal(Sold.TokenSold);
       expect(tokens[1].owner).to.equal(this.user2.address);
       expect(tokens[1].sold).to.equal(Sold.TokenSold);
       expect(tokens[2].owner).to.equal(this.admin.address);
       expect(tokens[2].sold).to.equal(Sold.None);
-      expect(await this.adminCarBarContract.balanceOf(this.admin.address, collectionId1)).to.equal(tokenCount - 2);
-      expect(await this.adminCarBarContract.balanceOf(this.user1.address, collectionId1)).to.equal(1);
-      expect(await this.adminCarBarContract.balanceOf(this.user2.address, collectionId1)).to.equal(1);
+      expect(await this.adminCarBarContract.balanceOf(this.admin.address, testValue.collectionId1)).to.equal(
+        testValue.tokenCount - 2,
+      );
+      expect(await this.adminCarBarContract.balanceOf(this.user1.address, testValue.collectionId1)).to.equal(1);
+      expect(await this.adminCarBarContract.balanceOf(this.user2.address, testValue.collectionId1)).to.equal(1);
 
       expect(await this.adminTestUSDT.balanceOf(this.user1.address)).to.equal(
         testValue.userInitialBalance0.sub(testValue.price01),
@@ -259,10 +289,13 @@ export function shouldBehaveCorrectPayment(): void {
     });
 
     it("should should throw error when user tries to buy token of an expired collection", async function () {
-      const newExpiryDate = dayjs().add(-1, "minute").toDate();
-
       await expect(
-        initCollectionsRealWithBuying(this, testValue.tokenCount, testValue.collectionId, toUnixTime(newExpiryDate)),
+        initCollectionsRealWithBuying(
+          this,
+          testValue.tokenCount,
+          testValue.collectionId0,
+          toUnixTime(testValue.newExpiryDate),
+        ),
       ).to.be.rejectedWith(vmEsceptionText(errorMessage.collectionExpirationMustBeGreater));
     });
   });

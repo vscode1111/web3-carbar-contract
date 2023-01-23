@@ -1,11 +1,11 @@
 import { CONTRACTS } from "constants/addresses";
+import dayjs from "dayjs";
 import { DeployFunction } from "hardhat-deploy/types";
 import { HardhatRuntimeEnvironment } from "hardhat/types";
-import { testValue } from "test/carBarContract/testData";
 import { CarBarContract } from "typechain-types/contracts/CarBarContract";
 import { CarBarContract__factory } from "typechain-types/factories/contracts/CarBarContract__factory";
 import { DeployNetworks } from "types/common";
-import { callWithTimer } from "utils/common";
+import { callWithTimer, toUnixTime } from "utils/common";
 
 import { deployValue } from "./deployData";
 
@@ -17,26 +17,25 @@ const func: DeployFunction = async (hre: HardhatRuntimeEnvironment): Promise<voi
     } = hre;
     const contractAddress = CONTRACTS.CAR_BAR[name as keyof DeployNetworks];
 
-    console.log(`CarBarContract [${contractAddress}] starts simulation...`);
+    console.log(`CarBarContract [${contractAddress}] starts token updating...`);
 
     const [admin] = await hre.ethers.getSigners();
 
     const carBarContractFactory = <CarBarContract__factory>await ethers.getContractFactory("CarBarContract");
     const adminCarBarContract = <CarBarContract>await carBarContractFactory.connect(admin).attach(contractAddress);
+    const newExpiryDate = dayjs().toDate();
 
-    let tx = await adminCarBarContract.safeTransferFrom(
-      admin.address,
-      deployValue.userAddress,
+    let tx = await adminCarBarContract.updateToken(
       deployValue.collectionId,
-      1,
-      testValue.emptyData,
+      deployValue.tokenId,
+      toUnixTime(newExpiryDate),
     );
-    console.log(`Call safeTransferFrom...`);
+    console.log(`Call updateToken...`);
     await tx.wait();
-    console.log(`Token of ${deployValue.collectionId} collection was safeTransfered`);
+    console.log(`Token ${deployValue.collectionId}/${deployValue.tokenId} was updated`);
   });
 };
 
-func.tags = ["CarBarContract:transfer"];
+func.tags = ["CarBarContract:update-token"];
 
 export default func;

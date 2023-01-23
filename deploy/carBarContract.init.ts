@@ -1,7 +1,7 @@
 import { CONTRACTS } from "constants/addresses";
 import { DeployFunction } from "hardhat-deploy/types";
 import { HardhatRuntimeEnvironment } from "hardhat/types";
-import { getTestCollections } from "test/carBarContract/data";
+import { getTestCollections } from "test/carBarContract/testData";
 import { CarBarContract } from "typechain-types/contracts/CarBarContract";
 import { CarBarContract__factory } from "typechain-types/factories/contracts/CarBarContract__factory";
 import { DeployNetworks } from "types/common";
@@ -20,14 +20,14 @@ const func: DeployFunction = async (hre: HardhatRuntimeEnvironment): Promise<voi
     const [admin] = await hre.ethers.getSigners();
 
     const carBarContractFactory = <CarBarContract__factory>await ethers.getContractFactory("CarBarContract");
-    const carBarContract = <CarBarContract>await carBarContractFactory.connect(admin).attach(contractAddress);
+    const adminCarBarContract = <CarBarContract>await carBarContractFactory.connect(admin).attach(contractAddress);
 
     console.log(`Setting init values...`);
-    let tx = await carBarContract.setName("carbar_test");
+    let tx = await adminCarBarContract.setName("carbar_test_x2");
     await tx.wait();
-    tx = await carBarContract.setSymbol("carbar_test_symbol");
+    tx = await adminCarBarContract.setSymbol("carbar_test_symbol_x2");
     await tx.wait();
-    tx = await carBarContract.setURI("http://20.68.212.46:8081/nft_json/x1_");
+    tx = await adminCarBarContract.setURI("http://20.68.212.46:8081/nft_json/x2_");
     await tx.wait();
     console.log(`Init values were set`);
 
@@ -36,7 +36,7 @@ const func: DeployFunction = async (hre: HardhatRuntimeEnvironment): Promise<voi
     for (const collection of collections) {
       const name = collection.name;
       console.log(`Sending transaction for collection "${name}"...`);
-      const tx = await carBarContract.createCollection(
+      const tx = await adminCarBarContract.createCollection(
         collection.name,
         collection.tokenCount,
         collection.price,
