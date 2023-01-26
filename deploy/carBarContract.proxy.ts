@@ -23,7 +23,7 @@ const func: DeployFunction = async (hre: HardhatRuntimeEnvironment): Promise<voi
     });
     await carBarContract.deployed();
     console.log(`CarBarContract deployed to ${carBarContract.address}`);
-  });
+  }, hre);
 };
 
 func.tags = ["CarBarContract:proxy"];

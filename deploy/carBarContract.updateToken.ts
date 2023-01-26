@@ -1,11 +1,11 @@
 import { CONTRACTS } from "constants/addresses";
-import dayjs from "dayjs";
 import { DeployFunction } from "hardhat-deploy/types";
 import { HardhatRuntimeEnvironment } from "hardhat/types";
+import { testValue } from "test/carBarContract/testData";
 import { CarBarContract } from "typechain-types/contracts/CarBarContract";
 import { CarBarContract__factory } from "typechain-types/factories/contracts/CarBarContract__factory";
 import { DeployNetworks } from "types/common";
-import { callWithTimer, toUnixTime } from "utils/common";
+import { callWithTimer } from "utils/common";
 
 import { deployValue } from "./deployData";
 
@@ -23,17 +23,12 @@ const func: DeployFunction = async (hre: HardhatRuntimeEnvironment): Promise<voi
 
     const carBarContractFactory = <CarBarContract__factory>await ethers.getContractFactory("CarBarContract");
     const adminCarBarContract = <CarBarContract>await carBarContractFactory.connect(admin).attach(contractAddress);
-    const newExpiryDate = dayjs().toDate();
 
-    let tx = await adminCarBarContract.updateToken(
-      deployValue.collectionId,
-      deployValue.tokenId,
-      toUnixTime(newExpiryDate),
-    );
+    let tx = await adminCarBarContract.updateToken(deployValue.collectionId, deployValue.tokenId, deployValue.today);
     console.log(`Call updateToken...`);
     await tx.wait();
     console.log(`Token ${deployValue.collectionId}/${deployValue.tokenId} was updated`);
-  });
+  }, hre);
 };
 
 func.tags = ["CarBarContract:update-token"];

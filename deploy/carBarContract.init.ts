@@ -7,6 +7,11 @@ import { CarBarContract__factory } from "typechain-types/factories/contracts/Car
 import { DeployNetworks } from "types/common";
 import { callWithTimer } from "utils/common";
 
+import { deployValue } from "./deployData";
+
+const HOST_URL = "https://carbar.online/nft_json";
+const INIT_COLLECTION = false;
+
 const func: DeployFunction = async (hre: HardhatRuntimeEnvironment): Promise<void> => {
   await callWithTimer(async () => {
     const {
@@ -23,30 +28,32 @@ const func: DeployFunction = async (hre: HardhatRuntimeEnvironment): Promise<voi
     const adminCarBarContract = <CarBarContract>await carBarContractFactory.connect(admin).attach(contractAddress);
 
     console.log(`Setting init values...`);
-    let tx = await adminCarBarContract.setName("carbar_test_x2");
+    let tx = await adminCarBarContract.setName(`carbar_test_${deployValue.nftPostfix}`);
     await tx.wait();
-    tx = await adminCarBarContract.setSymbol("carbar_test_symbol_x2");
+    tx = await adminCarBarContract.setSymbol(`carbar_test_symbol_${deployValue.nftPostfix}`);
     await tx.wait();
-    tx = await adminCarBarContract.setURI("http://20.68.212.46:8081/nft_json/x2_");
+    tx = await adminCarBarContract.setURI(`${HOST_URL}/${deployValue.nftPostfix}/`);
     await tx.wait();
     console.log(`Init values were set`);
 
-    const collections = getTestCollections();
+    if (INIT_COLLECTION) {
+      const collections = getTestCollections();
 
-    for (const collection of collections) {
-      const name = collection.name;
-      console.log(`Sending transaction for collection "${name}"...`);
-      const tx = await adminCarBarContract.createCollection(
-        collection.name,
-        collection.tokenCount,
-        collection.price,
-        collection.expiryDate,
-      );
-      console.log(`Sent transaction for collection "${name}"`);
-      await tx.wait();
-      console.log(`Collection "${name}" was mined`);
+      for (const collection of collections) {
+        const name = collection.name;
+        console.log(`Sending transaction for collection "${name}"...`);
+        const tx = await adminCarBarContract.createCollection(
+          collection.name,
+          collection.tokenCount,
+          collection.price,
+          collection.expiryDate,
+        );
+        console.log(`Sent transaction for collection "${name}"`);
+        await tx.wait();
+        console.log(`Collection "${name}" was mined`);
+      }
     }
-  });
+  }, hre);
 };
 
 func.tags = ["CarBarContract:init"];

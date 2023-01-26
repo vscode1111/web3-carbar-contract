@@ -19,7 +19,7 @@ const func: DeployFunction = async (hre: HardhatRuntimeEnvironment): Promise<voi
 
     const carBarContractFactory = <CarBarContract__factory>await ethers.getContractFactory("CarBarContract");
     const carBarContract = <CarBarContract>await upgrades.upgradeProxy(contractAddress, carBarContractFactory);
-  });
+  }, hre);
 };
 
 func.tags = ["CarBarContract:upgrade"];

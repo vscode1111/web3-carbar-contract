@@ -7,6 +7,7 @@
 !.yarn/versions
 **/artifacts
 **/build
+**/nft
 **/cache
 **/coverage
 **/.coverage_artifacts

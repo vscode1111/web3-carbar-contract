@@ -40,7 +40,7 @@ const func: DeployFunction = async (hre: HardhatRuntimeEnvironment): Promise<voi
     console.log(`Call buyToken...`);
     await tx.wait();
     console.log(`Token ${deployValue.collectionId} was bought`);
-  });
+  }, hre);
 };
 
 func.tags = ["CarBarContract:buy"];

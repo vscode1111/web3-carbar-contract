@@ -1,6 +1,5 @@
 import { expect } from "chai";
 import { TokenSoldEvent } from "typechain-types/contracts/CarBarContract";
-import { toUnixTime } from "utils/common";
 
 import { Sold, errorMessage, testValue } from "./testData";
 import { initCollectionsReal, initCollectionsRealWithBuying, vmEsceptionText } from "./utils";
@@ -290,12 +289,7 @@ export function shouldBehaveCorrectPayment(): void {
 
     it("should should throw error when user tries to buy token of an expired collection", async function () {
       await expect(
-        initCollectionsRealWithBuying(
-          this,
-          testValue.tokenCount,
-          testValue.collectionId0,
-          toUnixTime(testValue.newExpiryDate),
-        ),
+        initCollectionsRealWithBuying(this, testValue.tokenCount, testValue.collectionId0, testValue.todayMinus1m),
       ).to.be.rejectedWith(vmEsceptionText(errorMessage.collectionExpirationMustBeGreater));
     });
   });

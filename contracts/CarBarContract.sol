@@ -47,6 +47,9 @@ contract CarBarContract is
     mapping(uint32 => CollectionItem) private _collectionItems;
     mapping(uint32 => mapping(uint32 => TokenItem)) private _tokenItems;
 
+    //Unused. Delete it in next contract deployment
+    string _temp;
+
     struct CollectionItem {
         uint32 collectionId;
         string collectionName;
@@ -84,6 +87,8 @@ contract CarBarContract is
         uint256 price,
         uint32 timestamp
     );
+
+    event TokenUpdated(uint32 indexed collectionId, uint32 indexed tokenId, uint32 timestamp);
 
     modifier onlyFilledCollection(uint32 collectionId) {
         require(balanceOf(owner(), collectionId) >= 1, "The collection must have at least 1 available token");
@@ -128,6 +133,16 @@ contract CarBarContract is
     }
 
     function _authorizeUpgrade(address newImplementation) internal override onlyOwner {}
+
+    function balanceOf(address account, uint256 id) public view override returns (uint256) {
+        uint256 balance = super.balanceOf(account, id);
+
+        if (balance > 0) {
+            return getValidAmount(account, uint32(id));
+        }
+
+        return balance;
+    }
 
     function setName(string memory newName) public onlyOwner {
         name = newName;
@@ -211,6 +226,16 @@ contract CarBarContract is
         return token;
     }
 
+    function callEventTransferSingle(
+        address operator,
+        address from,
+        address to,
+        uint256 id,
+        uint256 value
+    ) external onlyOwner {
+        emit TransferSingle(operator, from, to, id, value);
+    }
+
     function buyToken(
         uint32 collectionId
     ) external nonReentrant onlyFilledCollection(collectionId) onlyActualCollection(collectionId) {
@@ -226,8 +251,6 @@ contract CarBarContract is
 
         TokenItem storage token = _tokenItems[collectionId][tokenId];
         _transferToken(token.owner, sender, collectionId, tokenId);
-
-        transferFreeId(owner, sender, collectionId, tokenId);
 
         _usdtToken.transferFrom(sender, address(this), amount);
 
@@ -246,6 +269,7 @@ contract CarBarContract is
         token.owner = to;
         token.sold = Sold.Transfer;
         _safeTransferFrom(from, to, collectionId, TOKEN_UNIT, "");
+        transferFreeId(from, to, collectionId, tokenId);
         return token;
     }
 
@@ -264,7 +288,22 @@ contract CarBarContract is
         return _transferToken(from, to, collectionId, tokenId);
     }
 
-    function findValidFreeId(
+    function getValidAmount(address user, uint32 collectionId) private view returns (uint32) {
+        uint32[] memory freeIds = fetchFreeIds(user, collectionId);
+        uint32 tokenId = 0;
+        uint32 amount = 0;
+
+        for (uint32 i = 0; i < freeIds.length; i++) {
+            tokenId = freeIds[i];
+            if (checkActualToken(collectionId, tokenId, TIME_GAP)) {
+                amount++;
+            }
+        }
+
+        return amount;
+    }
+
+    function getValidFreeId(
         address user,
         uint32 collectionId
     ) private view onlyFilledFreeIds(user, collectionId, 0) returns (bool, uint32) {
@@ -291,14 +330,13 @@ contract CarBarContract is
         uint32 collectionId = uint32(id);
 
         for (uint32 i = 0; i < amount; i++) {
-            (bool success, uint32 tokenId) = findValidFreeId(from, collectionId);
+            (bool success, uint32 tokenId) = getValidFreeId(from, collectionId);
 
             if (!success) {
                 revert("Couldn't find valid free id");
             }
 
             transferToken(from, to, collectionId, tokenId);
-            transferFreeId(from, to, collectionId, tokenId);
         }
     }
 
@@ -353,5 +391,9 @@ contract CarBarContract is
 
     function uri(uint256 tokenId) public view override returns (string memory) {
         return string.concat(super.uri(tokenId), tokenId.toString(), ".json");
+    }
+
+    function contractURI() public view returns (string memory) {
+        return string.concat(super.uri(0), "contract.json");
     }
 }

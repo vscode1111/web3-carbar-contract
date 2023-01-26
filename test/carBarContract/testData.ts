@@ -13,6 +13,7 @@ export const TUSDT_DECIMALS = 6;
 const PRICE_DIV = BigNumber.from(PROD_DATA ? "1" : "1000");
 
 export const testValue = {
+  collectionCount: 3,
   tokenCount: 5,
   collectionId0: 0,
   collectionId1: 1,
@@ -31,7 +32,10 @@ export const testValue = {
   userInitialBalance012: toWei(1000 + 2000 + 3000, TUSDT_DECIMALS).div(PRICE_DIV),
   endTime2023: toUnixTime(PROD_DATA ? "2023-12-31 23:59:59" : "2023-04-30 23:59:59"),
   emptyData: [],
-  newExpiryDate: dayjs().add(-1, "minute").toDate(),
+  today: toUnixTime(),
+  todayMinus1m: toUnixTime(dayjs().add(-1, "minute").toDate()),
+  todayPlus1m: toUnixTime(dayjs().add(1, "minute").toDate()),
+  todayPlus3d1m: toUnixTime(dayjs().add(3, "day").add(1, "minute").toDate()),
 };
 
 export function getTestCollections(tokenCount = TOKEN_COUNT, expiryDate = testValue.endTime2023): ICollectionItem[] {

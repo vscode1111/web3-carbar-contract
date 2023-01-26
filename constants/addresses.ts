@@ -16,6 +16,7 @@ export const CONTRACTS: Record<CONTRACT_LIST, DeployNetworks> = {
     // polygon: "0xdF7D00eb2d9ad2AE9c6A70a6f02CdD5688f7Ad25", //new prod
     // polygon: "0xfE51b932E4DE280afcf6CdB9Cf3CBc14aA40b9DE", //new prod2
     polygon: "0x26ab88bcA08DbC6A1Fd54deDAc45cB8757E5Ea44", //new prod3
+    // polygon: "0xeF38fCd8e2a8030e05EF90DfdaBDddE6D7517140", //new test
   },
 };
 

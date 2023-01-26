@@ -1,7 +1,6 @@
 import { CONTRACTS } from "constants/addresses";
 import { DeployFunction } from "hardhat-deploy/types";
 import { HardhatRuntimeEnvironment } from "hardhat/types";
-import { testValue } from "test/carBarContract/testData";
 import { CarBarContract } from "typechain-types/contracts/CarBarContract";
 import { CarBarContract__factory } from "typechain-types/factories/contracts/CarBarContract__factory";
 import { DeployNetworks } from "types/common";
@@ -17,26 +16,23 @@ const func: DeployFunction = async (hre: HardhatRuntimeEnvironment): Promise<voi
     } = hre;
     const contractAddress = CONTRACTS.CAR_BAR[name as keyof DeployNetworks];
 
-    console.log(`CarBarContract [${contractAddress}] starts transfering...`);
-
     const [admin] = await hre.ethers.getSigners();
 
     const carBarContractFactory = <CarBarContract__factory>await ethers.getContractFactory("CarBarContract");
     const adminCarBarContract = <CarBarContract>await carBarContractFactory.connect(admin).attach(contractAddress);
 
-    let tx = await adminCarBarContract.safeTransferFrom(
+    let tx = await adminCarBarContract.callEventTransferSingle(
       admin.address,
-      deployValue.userAddress,
+      deployValue.fromAddress,
+      deployValue.toAddress,
       deployValue.collectionId,
       1,
-      testValue.emptyData,
     );
-    console.log(`Call safeTransferFrom...`);
+    console.log(`Call callEventTransferSingle...`);
     await tx.wait();
-    console.log(`Token of ${deployValue.collectionId} collection was safeTransfered`);
   }, hre);
 };
 
-func.tags = ["CarBarContract:transfer"];
+func.tags = ["CarBarContract:call-event"];
 
 export default func;

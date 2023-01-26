@@ -1,7 +1,5 @@
 import { time } from "@nomicfoundation/hardhat-network-helpers";
 import { expect } from "chai";
-import dayjs from "dayjs";
-import { toUnixTime } from "utils/common";
 
 import { Sold, errorMessage, testValue } from "./testData";
 import { initCollectionsReal, initCollectionsRealWithBuying, vmEsceptionText } from "./utils";
@@ -147,16 +145,12 @@ export function shouldBehaveCorrectTransfer(): void {
     it("should procced safeTransfer with update by admin", async function () {
       await initCollectionsReal(this.adminCarBarContract, testValue.tokenCount);
 
-      await this.adminCarBarContract.updateToken(
-        testValue.collectionId0,
-        testValue.tokenId0,
-        toUnixTime(testValue.newExpiryDate),
-      );
+      await this.adminCarBarContract.updateToken(testValue.collectionId0, testValue.tokenId0, testValue.todayMinus1m);
 
       let tokens = await this.adminCarBarContract.fetchTokens(testValue.collectionId0);
       expect(tokens[0].owner).to.equal(this.admin.address);
       expect(tokens[0].sold).to.equal(Sold.None);
-      expect(tokens[0].expiryDate).to.equal(toUnixTime(testValue.newExpiryDate));
+      expect(tokens[0].expiryDate).to.equal(testValue.todayMinus1m);
       expect(tokens[1].owner).to.equal(this.admin.address);
       expect(tokens[1].sold).to.equal(Sold.None);
       expect(tokens[1].expiryDate).to.equal(0);
@@ -189,7 +183,7 @@ export function shouldBehaveCorrectTransfer(): void {
       tokens = await this.adminCarBarContract.fetchTokens(testValue.collectionId0);
       expect(tokens[0].owner).to.equal(this.admin.address);
       expect(tokens[0].sold).to.equal(Sold.None);
-      expect(tokens[0].expiryDate).to.equal(toUnixTime(testValue.newExpiryDate));
+      expect(tokens[0].expiryDate).to.equal(testValue.todayMinus1m);
       expect(tokens[1].owner).to.equal(this.user1.address);
       expect(tokens[1].sold).to.equal(Sold.Transfer);
       expect(tokens[1].expiryDate).to.equal(0);
@@ -264,16 +258,12 @@ export function shouldBehaveCorrectTransfer(): void {
       await this.user1CarBarContract.buyToken(testValue.collectionId0);
       await this.user1CarBarContract.buyToken(testValue.collectionId0);
 
-      await this.adminCarBarContract.updateToken(
-        testValue.collectionId0,
-        testValue.tokenId0,
-        toUnixTime(testValue.newExpiryDate),
-      );
+      await this.adminCarBarContract.updateToken(testValue.collectionId0, testValue.tokenId0, testValue.todayMinus1m);
 
       let tokens = await this.adminCarBarContract.fetchTokens(testValue.collectionId0);
       expect(tokens[0].owner).to.equal(this.user1.address);
       expect(tokens[0].sold).to.equal(Sold.TokenSold);
-      expect(tokens[0].expiryDate).to.equal(toUnixTime(testValue.newExpiryDate));
+      expect(tokens[0].expiryDate).to.equal(testValue.todayMinus1m);
       expect(tokens[1].owner).to.equal(this.user1.address);
       expect(tokens[1].sold).to.equal(Sold.TokenSold);
       expect(tokens[1].expiryDate).to.equal(0);
@@ -289,7 +279,7 @@ export function shouldBehaveCorrectTransfer(): void {
       tokens = await this.adminCarBarContract.fetchTokens(testValue.collectionId0);
       expect(tokens[0].owner).to.equal(this.user1.address);
       expect(tokens[0].sold).to.equal(Sold.TokenSold);
-      expect(tokens[0].expiryDate).to.equal(toUnixTime(testValue.newExpiryDate));
+      expect(tokens[0].expiryDate).to.equal(testValue.todayMinus1m);
       expect(tokens[1].owner).to.equal(this.user2.address);
       expect(tokens[1].sold).to.equal(Sold.Transfer);
       expect(tokens[1].expiryDate).to.equal(0);
@@ -303,24 +293,16 @@ export function shouldBehaveCorrectTransfer(): void {
       await this.user1CarBarContract.buyToken(testValue.collectionId0);
       await this.user1CarBarContract.buyToken(testValue.collectionId0);
 
-      await this.adminCarBarContract.updateToken(
-        testValue.collectionId0,
-        testValue.tokenId0,
-        toUnixTime(testValue.newExpiryDate),
-      );
-      await this.adminCarBarContract.updateToken(
-        testValue.collectionId0,
-        testValue.tokenId1,
-        toUnixTime(testValue.newExpiryDate),
-      );
+      await this.adminCarBarContract.updateToken(testValue.collectionId0, testValue.tokenId0, testValue.todayMinus1m);
+      await this.adminCarBarContract.updateToken(testValue.collectionId0, testValue.tokenId1, testValue.todayMinus1m);
 
       let tokens = await this.adminCarBarContract.fetchTokens(testValue.collectionId0);
       expect(tokens[0].owner).to.equal(this.user1.address);
       expect(tokens[0].sold).to.equal(Sold.TokenSold);
-      expect(tokens[0].expiryDate).to.equal(toUnixTime(testValue.newExpiryDate));
+      expect(tokens[0].expiryDate).to.equal(testValue.todayMinus1m);
       expect(tokens[1].owner).to.equal(this.user1.address);
       expect(tokens[1].sold).to.equal(Sold.TokenSold);
-      expect(tokens[1].expiryDate).to.equal(toUnixTime(testValue.newExpiryDate));
+      expect(tokens[1].expiryDate).to.equal(testValue.todayMinus1m);
 
       await expect(
         this.shopCarBarContract.safeTransferFrom(
@@ -414,15 +396,8 @@ export function shouldBehaveCorrectTransfer(): void {
     });
 
     it("should should throw error when user tries to transfer token of an expired collection", async function () {
-      const newCollectionExpiryDate = dayjs().add(1, "minute").toDate();
-      await initCollectionsRealWithBuying(
-        this,
-        testValue.tokenCount,
-        testValue.collectionId0,
-        toUnixTime(newCollectionExpiryDate),
-      );
-      const newTokenExpiryDate = dayjs().add(1, "minute").toDate();
-      await time.increaseTo(toUnixTime(newTokenExpiryDate));
+      await initCollectionsRealWithBuying(this, testValue.tokenCount, testValue.collectionId0, testValue.todayPlus1m);
+      await time.increaseTo(testValue.todayPlus1m);
 
       await expect(
         this.user1CarBarContract.transferToken(
@@ -445,21 +420,11 @@ export function shouldBehaveCorrectTransfer(): void {
       expect(freeIds.length).to.equal(1);
       expect(freeIds[0]).to.equal(0);
 
-      const newExpiryDate = dayjs().add(3, "day").add(1, "minute").toDate();
-
-      await this.adminCarBarContract.updateToken(
-        testValue.collectionId0,
-        testValue.tokenId0,
-        toUnixTime(newExpiryDate),
-      );
+      await this.adminCarBarContract.updateToken(testValue.collectionId0, testValue.tokenId0, testValue.todayPlus3d1m);
       freeIds = await this.adminCarBarContract.fetchFreeIds(this.user1.address, testValue.collectionId0);
       expect(freeIds.length).to.equal(1);
 
-      await this.adminCarBarContract.updateToken(
-        testValue.collectionId0,
-        testValue.tokenId0,
-        toUnixTime(newExpiryDate),
-      );
+      await this.adminCarBarContract.updateToken(testValue.collectionId0, testValue.tokenId0, testValue.todayPlus3d1m);
       freeIds = await this.adminCarBarContract.fetchFreeIds(this.user1.address, testValue.collectionId0);
       expect(freeIds.length).to.equal(1);
 
@@ -476,12 +441,7 @@ export function shouldBehaveCorrectTransfer(): void {
 
     it("should procced the transfer of the updated token", async function () {
       await initCollectionsRealWithBuying(this, testValue.tokenCount, testValue.collectionId0);
-      const newExpiryDate = dayjs().add(3, "day").add(1, "minute").toDate();
-      await this.adminCarBarContract.updateToken(
-        testValue.collectionId0,
-        testValue.tokenId0,
-        toUnixTime(newExpiryDate),
-      );
+      await this.adminCarBarContract.updateToken(testValue.collectionId0, testValue.tokenId0, testValue.todayPlus3d1m);
       await this.user1CarBarContract.transferToken(
         this.user1.address,
         this.user2.address,
@@ -500,11 +460,7 @@ export function shouldBehaveCorrectTransfer(): void {
 
     it("should throw error when user tries to transfer expired token", async function () {
       await initCollectionsRealWithBuying(this, testValue.tokenCount, testValue.collectionId0);
-      await this.adminCarBarContract.updateToken(
-        testValue.collectionId0,
-        testValue.tokenId0,
-        toUnixTime(testValue.newExpiryDate),
-      );
+      await this.adminCarBarContract.updateToken(testValue.collectionId0, testValue.tokenId0, testValue.todayMinus1m);
 
       await expect(
         this.user1CarBarContract.transferToken(
