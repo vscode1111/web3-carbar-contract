@@ -80,7 +80,7 @@
     "commit": "git-cz",
     "compile": "cross-env TS_NODE_TRANSPILE_ONLY=true hardhat compile",
     "verify": "hardhat verify",
-    "coverage": "hardhat coverage --solcoverjs ./.solcover.js --temp artifacts --testfiles \"test/**/*.ts\" && yarn typechain",
+    "coverage": "hardhat coverage --network hardhat --solcoverjs ./.solcover.js --temp artifacts --testfiles \"test/**/*.ts\" && yarn typechain",
     "deploy": "hardhat deploy",
     "deploy:accounts": "hardhat deploy --tags accounts",
     "deploy:tusdt": "hardhat deploy --tags TestUSDT",

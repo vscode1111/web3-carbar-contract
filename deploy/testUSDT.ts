@@ -1,4 +1,4 @@
-import { ethers, upgrades } from "hardhat";
+import { ethers } from "hardhat";
 import { DeployFunction } from "hardhat-deploy/types";
 import { TestUSDT } from "typechain-types/contracts/TestUSDT";
 import { TestUSDT__factory } from "typechain-types/factories/contracts/TestUSDT__factory";
