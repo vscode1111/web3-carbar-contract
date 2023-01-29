@@ -16,11 +16,17 @@ const func: DeployFunction = async (hre: HardhatRuntimeEnvironment): Promise<voi
     } = hre;
     const usdtTokenAddress = TOKENS.USDT[name as keyof DeployNetworks];
     console.log(`USDT address is ${usdtTokenAddress}`);
-    const carBarContractFactory = <CarBarContract__factory>await ethers.getContractFactory("CarBarContract");
-    const carBarContract = <CarBarContract>await upgrades.deployProxy(carBarContractFactory, [usdtTokenAddress], {
-      initializer: "initialize",
-      kind: "uups",
-    });
+    const carBarContractFactory = <CarBarContract__factory>(
+      await ethers.getContractFactory("CarBarContract")
+    );
+    const carBarContract = <CarBarContract>await upgrades.deployProxy(
+      carBarContractFactory,
+      [usdtTokenAddress],
+      {
+        initializer: "initialize",
+        kind: "uups",
+      },
+    );
     await carBarContract.deployed();
     console.log(`CarBarContract deployed to ${carBarContract.address}`);
   }, hre);

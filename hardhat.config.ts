@@ -9,7 +9,9 @@ import { resolve } from "path";
 import "tsconfig-paths/register";
 
 const dotenvConfigPath: string = process.env.DOTENV_CONFIG_PATH || "./.env";
-dotenvConfig({ path: resolve(__dirname, dotenvConfigPath) });
+dotenvConfig({
+  path: resolve(__dirname, dotenvConfigPath),
+});
 
 // Ensure that we have all the environment variables we need.
 const providerUrl: string | undefined = process.env.PROVIDER_URL;

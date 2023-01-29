@@ -4,7 +4,12 @@
   "rules": {
     "code-complexity": ["error", 8],
     "compiler-version": ["error", ">=0.8.4"],
-    "func-visibility": ["error", { "ignoreConstructors": true }],
+    "func-visibility": [
+      "error",
+      {
+        "ignoreConstructors": true
+      }
+    ],
     "max-line-length": ["error", 120],
     "not-rely-on-time": "off",
     "prettier/prettier": [
@@ -13,6 +18,11 @@
         "endOfLine": "auto"
       }
     ],
-    "reason-string": ["warn", { "maxLength": 64 }]
+    "reason-string": [
+      "warn",
+      {
+        "maxLength": 64
+      }
+    ]
   }
 }

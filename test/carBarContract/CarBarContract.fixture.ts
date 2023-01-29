@@ -16,7 +16,9 @@ export async function deployCarBarContractFixture(): Promise<ContextBase> {
   const user1TestUSDT = await adminTestUSDT.connect(user1);
   const user2TestUSDT = await adminTestUSDT.connect(user2);
 
-  const carBarContractFactory = <CarBarContract__factory>await ethers.getContractFactory("CarBarContract");
+  const carBarContractFactory = <CarBarContract__factory>(
+    await ethers.getContractFactory("CarBarContract")
+  );
   const adminCarBarContract = <CarBarContract>await upgrades.deployProxy(
     carBarContractFactory,
     [adminTestUSDT.address],

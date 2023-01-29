@@ -68,7 +68,9 @@ export async function callWithTimer(
   if (hre && admin && balance0) {
     balance1 = toNumber(await admin.getBalance());
     diffBalance = balance0 - balance1;
-    extText = `, balance: ${balance1.toFixed(FRACTION_DIGITS)}, diff: -${diffBalance.toFixed(FRACTION_DIGITS)}`;
+    extText = `, balance: ${balance1.toFixed(FRACTION_DIGITS)}, diff: -${diffBalance.toFixed(
+      FRACTION_DIGITS,
+    )}`;
   }
 
   const finishMessage = finishMessageFn

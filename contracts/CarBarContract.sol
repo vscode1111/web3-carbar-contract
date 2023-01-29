@@ -91,7 +91,10 @@ contract CarBarContract is
     event TokenUpdated(uint32 indexed collectionId, uint32 indexed tokenId, uint32 timestamp);
 
     modifier onlyFilledCollection(uint32 collectionId) {
-        require(balanceOf(owner(), collectionId) >= 1, "The collection must have at least 1 available token");
+        require(
+            balanceOf(owner(), collectionId) >= 1,
+            "The collection must have at least 1 available token"
+        );
         _;
     }
 
@@ -104,7 +107,11 @@ contract CarBarContract is
         _;
     }
 
-    function checkActualToken(uint32 collectionId, uint32 tokenId, uint32 timeOffset) private view returns (bool) {
+    function checkActualToken(
+        uint32 collectionId,
+        uint32 tokenId,
+        uint32 timeOffset
+    ) private view returns (bool) {
         TokenItem memory token = fetchToken(collectionId, tokenId);
         return token.expiryDate == 0 || block.timestamp <= token.expiryDate - timeOffset;
     }
@@ -191,7 +198,13 @@ contract CarBarContract is
         uint32 expiryDate
     ) private returns (CollectionItem memory) {
         require(price > 0, "Price must be greater than zero");
-        _collectionItems[collectionId] = CollectionItem(collectionId, collectionName, tokenCount, price, expiryDate);
+        _collectionItems[collectionId] = CollectionItem(
+            collectionId,
+            collectionName,
+            tokenCount,
+            price,
+            expiryDate
+        );
         emit CollectionItemCreated(collectionId, collectionName, tokenCount, price, expiryDate);
         return _collectionItems[collectionId];
     }
@@ -244,7 +257,10 @@ contract CarBarContract is
         address owner = address(owner());
         address sender = _msgSender();
 
-        require(_usdtToken.allowance(sender, address(this)) >= amount, "User must allow to use of funds");
+        require(
+            _usdtToken.allowance(sender, address(this)) >= amount,
+            "User must allow to use of funds"
+        );
         require(_usdtToken.balanceOf(sender) >= amount, "User must have funds");
 
         uint32 tokenId = getFreeId(owner, collectionId, 0);
@@ -356,7 +372,10 @@ contract CarBarContract is
 
     function withdraw(address to, uint256 amount) external onlyOwner nonReentrant {
         require(to != address(0), "Incorrect address");
-        require(_usdtToken.balanceOf(address(this)) >= amount, "Contract must have sufficient funds");
+        require(
+            _usdtToken.balanceOf(address(this)) >= amount,
+            "Contract must have sufficient funds"
+        );
 
         _usdtToken.transfer(to, amount);
     }
@@ -385,7 +404,10 @@ contract CarBarContract is
         return tokens;
     }
 
-    function fetchToken(uint32 collectionId, uint32 tokenId) public view returns (TokenItem memory) {
+    function fetchToken(
+        uint32 collectionId,
+        uint32 tokenId
+    ) public view returns (TokenItem memory) {
         return _tokenItems[collectionId][tokenId];
     }
 

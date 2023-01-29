@@ -24,8 +24,12 @@ const func: DeployFunction = async (hre: HardhatRuntimeEnvironment): Promise<voi
 
     const [admin] = await hre.ethers.getSigners();
 
-    const carBarContractFactory = <CarBarContract__factory>await ethers.getContractFactory("CarBarContract");
-    const adminCarBarContract = <CarBarContract>await carBarContractFactory.connect(admin).attach(contractAddress);
+    const carBarContractFactory = <CarBarContract__factory>(
+      await ethers.getContractFactory("CarBarContract")
+    );
+    const adminCarBarContract = <CarBarContract>(
+      await carBarContractFactory.connect(admin).attach(contractAddress)
+    );
 
     console.log(`Setting init values...`);
     let tx = await adminCarBarContract.setName(`carbar_test_${deployValue.nftPostfix}`);

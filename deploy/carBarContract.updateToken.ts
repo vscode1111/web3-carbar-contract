@@ -1,7 +1,6 @@
 import { CONTRACTS } from "constants/addresses";
 import { DeployFunction } from "hardhat-deploy/types";
 import { HardhatRuntimeEnvironment } from "hardhat/types";
-import { testValue } from "test/testData";
 import { CarBarContract } from "typechain-types/contracts/CarBarContract";
 import { CarBarContract__factory } from "typechain-types/factories/contracts/CarBarContract__factory";
 import { DeployNetworks } from "types/common";
@@ -21,10 +20,18 @@ const func: DeployFunction = async (hre: HardhatRuntimeEnvironment): Promise<voi
 
     const [admin] = await hre.ethers.getSigners();
 
-    const carBarContractFactory = <CarBarContract__factory>await ethers.getContractFactory("CarBarContract");
-    const adminCarBarContract = <CarBarContract>await carBarContractFactory.connect(admin).attach(contractAddress);
+    const carBarContractFactory = <CarBarContract__factory>(
+      await ethers.getContractFactory("CarBarContract")
+    );
+    const adminCarBarContract = <CarBarContract>(
+      await carBarContractFactory.connect(admin).attach(contractAddress)
+    );
 
-    let tx = await adminCarBarContract.updateToken(deployValue.collectionId, deployValue.tokenId, deployValue.today);
+    let tx = await adminCarBarContract.updateToken(
+      deployValue.collectionId,
+      deployValue.tokenId,
+      deployValue.today,
+    );
     console.log(`Call updateToken...`);
     await tx.wait();
     console.log(`Token ${deployValue.collectionId}/${deployValue.tokenId} was updated`);

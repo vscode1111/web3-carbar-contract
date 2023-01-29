@@ -1,5 +1,4 @@
 import { expect } from "chai";
-import { BigNumber } from "ethers";
 
 import { testValue } from "../testData";
 import { checkToken, getCollectionName, initCollections, initCollectionsReal } from "../utils";
@@ -29,7 +28,10 @@ export function shouldBehaveCorrectFetching(): void {
       for (let i = 0; i < testValue.collectionCount; i++) {
         const collection = collections[i];
 
-        const balance = await this.adminCarBarContract.balanceOf(adminAddress, collection.collectionId);
+        const balance = await this.adminCarBarContract.balanceOf(
+          adminAddress,
+          collection.collectionId,
+        );
         expect(balance).to.eq(collection.tokenCount);
 
         expect(collection.collectionId).to.eq(i);
@@ -55,7 +57,10 @@ export function shouldBehaveCorrectFetching(): void {
     it("Should be correct update certain collection", async function () {
       await initCollections(this.adminCarBarContract, testValue.collectionCount);
 
-      await this.adminCarBarContract.updateCollection(testValue.collectionId0, getCollectionName(10));
+      await this.adminCarBarContract.updateCollection(
+        testValue.collectionId0,
+        getCollectionName(10),
+      );
 
       const collection = await this.adminCarBarContract.fetchCollection(testValue.collectionId0);
 
@@ -69,13 +74,23 @@ export function shouldBehaveCorrectFetching(): void {
     it("Should be correct update certain token", async function () {
       await initCollections(this.adminCarBarContract, testValue.collectionCount);
 
-      let token = await this.adminCarBarContract.fetchToken(testValue.collectionId0, testValue.tokenId0);
+      let token = await this.adminCarBarContract.fetchToken(
+        testValue.collectionId0,
+        testValue.tokenId0,
+      );
       const owner = token.owner;
       const sold = token.sold;
 
-      await this.adminCarBarContract.updateToken(testValue.collectionId0, testValue.tokenId0, testValue.today);
+      await this.adminCarBarContract.updateToken(
+        testValue.collectionId0,
+        testValue.tokenId0,
+        testValue.today,
+      );
 
-      token = await this.adminCarBarContract.fetchToken(testValue.collectionId0, testValue.tokenId0);
+      token = await this.adminCarBarContract.fetchToken(
+        testValue.collectionId0,
+        testValue.tokenId0,
+      );
 
       expect(token.tokenId).to.eq(testValue.tokenId0);
       expect(token.owner).to.eq(owner);
@@ -86,40 +101,65 @@ export function shouldBehaveCorrectFetching(): void {
     it("Should be correct balanceOf", async function () {
       await initCollectionsReal(this.adminCarBarContract, testValue.tokenCount);
 
-      expect(await this.adminCarBarContract.balanceOf(this.admin.address, testValue.collectionId0)).to.equal(
-        testValue.tokenCount,
+      expect(
+        await this.adminCarBarContract.balanceOf(this.admin.address, testValue.collectionId0),
+      ).to.equal(testValue.tokenCount);
+
+      await this.adminCarBarContract.updateToken(
+        testValue.collectionId0,
+        testValue.tokenId0,
+        testValue.todayMinus1m,
       );
 
-      await this.adminCarBarContract.updateToken(testValue.collectionId0, testValue.tokenId0, testValue.todayMinus1m);
+      expect(
+        await this.adminCarBarContract.balanceOf(this.admin.address, testValue.collectionId0),
+      ).to.equal(testValue.tokenCount - 1);
 
-      expect(await this.adminCarBarContract.balanceOf(this.admin.address, testValue.collectionId0)).to.equal(
-        testValue.tokenCount - 1,
+      await this.adminCarBarContract.updateToken(
+        testValue.collectionId0,
+        testValue.tokenId1,
+        testValue.todayMinus1m,
       );
 
-      await this.adminCarBarContract.updateToken(testValue.collectionId0, testValue.tokenId1, testValue.todayMinus1m);
-
-      expect(await this.adminCarBarContract.balanceOf(this.admin.address, testValue.collectionId0)).to.equal(
-        testValue.tokenCount - 2,
-      );
+      expect(
+        await this.adminCarBarContract.balanceOf(this.admin.address, testValue.collectionId0),
+      ).to.equal(testValue.tokenCount - 2);
     });
 
     it("Should be correct balanceOf", async function () {
       await initCollectionsReal(this.adminCarBarContract, testValue.tokenCount);
 
       expect(
-        await this.adminCarBarContract.balanceOfBatch([this.admin.address], [testValue.collectionId0]),
+        await this.adminCarBarContract.balanceOfBatch(
+          [this.admin.address],
+          [testValue.collectionId0],
+        ),
       ).to.deep.equal([testValue.tokenCount]);
 
-      await this.adminCarBarContract.updateToken(testValue.collectionId0, testValue.tokenId0, testValue.todayMinus1m);
+      await this.adminCarBarContract.updateToken(
+        testValue.collectionId0,
+        testValue.tokenId0,
+        testValue.todayMinus1m,
+      );
 
       expect(
-        await this.adminCarBarContract.balanceOfBatch([this.admin.address], [testValue.collectionId0]),
+        await this.adminCarBarContract.balanceOfBatch(
+          [this.admin.address],
+          [testValue.collectionId0],
+        ),
       ).to.deep.equal([testValue.tokenCount - 1]);
 
-      await this.adminCarBarContract.updateToken(testValue.collectionId0, testValue.tokenId1, testValue.todayMinus1m);
+      await this.adminCarBarContract.updateToken(
+        testValue.collectionId0,
+        testValue.tokenId1,
+        testValue.todayMinus1m,
+      );
 
       expect(
-        await this.adminCarBarContract.balanceOfBatch([this.admin.address], [testValue.collectionId0]),
+        await this.adminCarBarContract.balanceOfBatch(
+          [this.admin.address],
+          [testValue.collectionId0],
+        ),
       ).to.deep.equal([testValue.tokenCount - 2]);
     });
 

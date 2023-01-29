@@ -33,8 +33,12 @@ const func: DeployFunction = async (hre: HardhatRuntimeEnvironment): Promise<voi
     await tx.wait();
     console.log(`USDT ${testValue.price0.toNumber()} was approved`);
 
-    const carBarContractFactory = <CarBarContract__factory>await ethers.getContractFactory("CarBarContract");
-    const carBarContract = <CarBarContract>await carBarContractFactory.connect(user).attach(carBarAddress);
+    const carBarContractFactory = <CarBarContract__factory>(
+      await ethers.getContractFactory("CarBarContract")
+    );
+    const carBarContract = <CarBarContract>(
+      await carBarContractFactory.connect(user).attach(carBarAddress)
+    );
 
     tx = await carBarContract.buyToken(deployValue.collectionId);
     console.log(`Call buyToken...`);

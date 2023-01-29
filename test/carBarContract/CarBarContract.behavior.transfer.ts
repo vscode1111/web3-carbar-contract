@@ -41,21 +41,30 @@ export function shouldBehaveCorrectTransfer(): void {
     it("should correct free Ids", async function () {
       await initCollectionsReal(this.adminCarBarContract, testValue.tokenCount);
 
-      let freeIds = await this.adminCarBarContract.fetchFreeIds(this.admin.address, testValue.collectionId0);
+      let freeIds = await this.adminCarBarContract.fetchFreeIds(
+        this.admin.address,
+        testValue.collectionId0,
+      );
       expect(freeIds[0]).to.equal(0);
       expect(freeIds[1]).to.equal(1);
       expect(freeIds[2]).to.equal(2);
       expect(freeIds[3]).to.equal(3);
       expect(freeIds[4]).to.equal(4);
 
-      freeIds = await this.adminCarBarContract.fetchFreeIds(this.admin.address, testValue.collectionId1);
+      freeIds = await this.adminCarBarContract.fetchFreeIds(
+        this.admin.address,
+        testValue.collectionId1,
+      );
       expect(freeIds[0]).to.equal(0);
       expect(freeIds[1]).to.equal(1);
       expect(freeIds[2]).to.equal(2);
       expect(freeIds[3]).to.equal(3);
       expect(freeIds[4]).to.equal(4);
 
-      freeIds = await this.adminCarBarContract.fetchFreeIds(this.admin.address, testValue.collectionId2);
+      freeIds = await this.adminCarBarContract.fetchFreeIds(
+        this.admin.address,
+        testValue.collectionId2,
+      );
       expect(freeIds[0]).to.equal(0);
       expect(freeIds[1]).to.equal(1);
       expect(freeIds[2]).to.equal(2);
@@ -145,7 +154,11 @@ export function shouldBehaveCorrectTransfer(): void {
     it("should procced safeTransfer with update by admin", async function () {
       await initCollectionsReal(this.adminCarBarContract, testValue.tokenCount);
 
-      await this.adminCarBarContract.updateToken(testValue.collectionId0, testValue.tokenId0, testValue.todayMinus1m);
+      await this.adminCarBarContract.updateToken(
+        testValue.collectionId0,
+        testValue.tokenId0,
+        testValue.todayMinus1m,
+      );
 
       let tokens = await this.adminCarBarContract.fetchTokens(testValue.collectionId0);
       expect(tokens[0].owner).to.equal(this.admin.address);
@@ -155,12 +168,18 @@ export function shouldBehaveCorrectTransfer(): void {
       expect(tokens[1].sold).to.equal(Sold.None);
       expect(tokens[1].expiryDate).to.equal(0);
 
-      let adminFreeIds = await this.adminCarBarContract.fetchFreeIds(this.admin.address, testValue.collectionId0);
+      let adminFreeIds = await this.adminCarBarContract.fetchFreeIds(
+        this.admin.address,
+        testValue.collectionId0,
+      );
       expect(adminFreeIds.length).to.equal(testValue.tokenCount);
       expect(adminFreeIds[0]).to.equal(0);
       expect(adminFreeIds[1]).to.equal(1);
       expect(adminFreeIds[2]).to.equal(2);
-      let user1FreeIds = await this.adminCarBarContract.fetchFreeIds(this.user1.address, testValue.collectionId0);
+      let user1FreeIds = await this.adminCarBarContract.fetchFreeIds(
+        this.user1.address,
+        testValue.collectionId0,
+      );
       expect(user1FreeIds.length).to.equal(0);
 
       await this.adminCarBarContract.safeTransferFrom(
@@ -171,12 +190,18 @@ export function shouldBehaveCorrectTransfer(): void {
         testValue.emptyData,
       );
 
-      adminFreeIds = await this.adminCarBarContract.fetchFreeIds(this.admin.address, testValue.collectionId0);
+      adminFreeIds = await this.adminCarBarContract.fetchFreeIds(
+        this.admin.address,
+        testValue.collectionId0,
+      );
       expect(adminFreeIds.length).to.equal(testValue.tokenCount - 1);
       expect(adminFreeIds[0]).to.equal(0);
       expect(adminFreeIds[1]).to.equal(2);
       expect(adminFreeIds[2]).to.equal(3);
-      user1FreeIds = await this.adminCarBarContract.fetchFreeIds(this.user1.address, testValue.collectionId0);
+      user1FreeIds = await this.adminCarBarContract.fetchFreeIds(
+        this.user1.address,
+        testValue.collectionId0,
+      );
       expect(user1FreeIds.length).to.equal(1);
       expect(user1FreeIds[0]).to.equal(1);
 
@@ -195,12 +220,18 @@ export function shouldBehaveCorrectTransfer(): void {
         1,
         testValue.emptyData,
       );
-      adminFreeIds = await this.adminCarBarContract.fetchFreeIds(this.admin.address, testValue.collectionId0);
+      adminFreeIds = await this.adminCarBarContract.fetchFreeIds(
+        this.admin.address,
+        testValue.collectionId0,
+      );
       expect(adminFreeIds.length).to.equal(testValue.tokenCount - 2);
       expect(adminFreeIds[0]).to.equal(0);
       expect(adminFreeIds[1]).to.equal(3);
       expect(adminFreeIds[2]).to.equal(4);
-      user1FreeIds = await this.adminCarBarContract.fetchFreeIds(this.user1.address, testValue.collectionId0);
+      user1FreeIds = await this.adminCarBarContract.fetchFreeIds(
+        this.user1.address,
+        testValue.collectionId0,
+      );
       expect(user1FreeIds.length).to.equal(2);
       expect(user1FreeIds[0]).to.equal(1);
       expect(user1FreeIds[1]).to.equal(2);
@@ -212,11 +243,17 @@ export function shouldBehaveCorrectTransfer(): void {
         1,
         testValue.emptyData,
       );
-      adminFreeIds = await this.adminCarBarContract.fetchFreeIds(this.admin.address, testValue.collectionId0);
+      adminFreeIds = await this.adminCarBarContract.fetchFreeIds(
+        this.admin.address,
+        testValue.collectionId0,
+      );
       expect(adminFreeIds.length).to.equal(testValue.tokenCount - 3);
       expect(adminFreeIds[0]).to.equal(0);
       expect(adminFreeIds[1]).to.equal(4);
-      user1FreeIds = await this.adminCarBarContract.fetchFreeIds(this.user1.address, testValue.collectionId0);
+      user1FreeIds = await this.adminCarBarContract.fetchFreeIds(
+        this.user1.address,
+        testValue.collectionId0,
+      );
       expect(user1FreeIds.length).to.equal(3);
       expect(user1FreeIds[0]).to.equal(1);
       expect(user1FreeIds[1]).to.equal(2);
@@ -229,10 +266,16 @@ export function shouldBehaveCorrectTransfer(): void {
         1,
         testValue.emptyData,
       );
-      adminFreeIds = await this.adminCarBarContract.fetchFreeIds(this.admin.address, testValue.collectionId0);
+      adminFreeIds = await this.adminCarBarContract.fetchFreeIds(
+        this.admin.address,
+        testValue.collectionId0,
+      );
       expect(adminFreeIds.length).to.equal(testValue.tokenCount - 4);
       expect(adminFreeIds[0]).to.equal(0);
-      user1FreeIds = await this.adminCarBarContract.fetchFreeIds(this.user1.address, testValue.collectionId0);
+      user1FreeIds = await this.adminCarBarContract.fetchFreeIds(
+        this.user1.address,
+        testValue.collectionId0,
+      );
       expect(user1FreeIds.length).to.equal(4);
       expect(user1FreeIds[0]).to.equal(1);
       expect(user1FreeIds[1]).to.equal(2);
@@ -258,7 +301,11 @@ export function shouldBehaveCorrectTransfer(): void {
       await this.user1CarBarContract.buyToken(testValue.collectionId0);
       await this.user1CarBarContract.buyToken(testValue.collectionId0);
 
-      await this.adminCarBarContract.updateToken(testValue.collectionId0, testValue.tokenId0, testValue.todayMinus1m);
+      await this.adminCarBarContract.updateToken(
+        testValue.collectionId0,
+        testValue.tokenId0,
+        testValue.todayMinus1m,
+      );
 
       let tokens = await this.adminCarBarContract.fetchTokens(testValue.collectionId0);
       expect(tokens[0].owner).to.equal(this.user1.address);
@@ -293,8 +340,16 @@ export function shouldBehaveCorrectTransfer(): void {
       await this.user1CarBarContract.buyToken(testValue.collectionId0);
       await this.user1CarBarContract.buyToken(testValue.collectionId0);
 
-      await this.adminCarBarContract.updateToken(testValue.collectionId0, testValue.tokenId0, testValue.todayMinus1m);
-      await this.adminCarBarContract.updateToken(testValue.collectionId0, testValue.tokenId1, testValue.todayMinus1m);
+      await this.adminCarBarContract.updateToken(
+        testValue.collectionId0,
+        testValue.tokenId0,
+        testValue.todayMinus1m,
+      );
+      await this.adminCarBarContract.updateToken(
+        testValue.collectionId0,
+        testValue.tokenId1,
+        testValue.todayMinus1m,
+      );
 
       let tokens = await this.adminCarBarContract.fetchTokens(testValue.collectionId0);
       expect(tokens[0].owner).to.equal(this.user1.address);
@@ -364,10 +419,12 @@ export function shouldBehaveCorrectTransfer(): void {
       expect(tokens[0].sold).to.equal(Sold.TokenSold);
       expect(tokens[1].owner).to.equal(this.admin.address);
       expect(tokens[1].sold).to.equal(Sold.None);
-      expect(await this.adminCarBarContract.balanceOf(this.user1.address, testValue.collectionId0)).to.equal(1);
-      expect(await this.adminCarBarContract.balanceOf(this.user2.address, testValue.collectionId0)).to.equal(
-        testValue.zero,
-      );
+      expect(
+        await this.adminCarBarContract.balanceOf(this.user1.address, testValue.collectionId0),
+      ).to.equal(1);
+      expect(
+        await this.adminCarBarContract.balanceOf(this.user2.address, testValue.collectionId0),
+      ).to.equal(testValue.zero);
 
       await this.user1CarBarContract.transferToken(
         this.user1.address,
@@ -381,10 +438,12 @@ export function shouldBehaveCorrectTransfer(): void {
       expect(tokens[0].sold).to.equal(Sold.Transfer);
       expect(tokens[1].owner).to.equal(this.admin.address);
       expect(tokens[1].sold).to.equal(Sold.None);
-      expect(await this.adminCarBarContract.balanceOf(this.user1.address, testValue.collectionId0)).to.equal(
-        testValue.zero,
-      );
-      expect(await this.adminCarBarContract.balanceOf(this.user2.address, testValue.collectionId0)).to.equal(1);
+      expect(
+        await this.adminCarBarContract.balanceOf(this.user1.address, testValue.collectionId0),
+      ).to.equal(testValue.zero);
+      expect(
+        await this.adminCarBarContract.balanceOf(this.user2.address, testValue.collectionId0),
+      ).to.equal(1);
     });
 
     it("should throw error when user tries to transfer not his token", async function () {
@@ -396,7 +455,12 @@ export function shouldBehaveCorrectTransfer(): void {
     });
 
     it("should should throw error when user tries to transfer token of an expired collection", async function () {
-      await initCollectionsRealWithBuying(this, testValue.tokenCount, testValue.collectionId0, testValue.todayPlus1m);
+      await initCollectionsRealWithBuying(
+        this,
+        testValue.tokenCount,
+        testValue.collectionId0,
+        testValue.todayPlus1m,
+      );
       await time.increaseTo(testValue.todayPlus1m);
 
       await expect(
@@ -411,37 +475,67 @@ export function shouldBehaveCorrectTransfer(): void {
 
     it("should updated token correctly", async function () {
       await initCollectionsRealWithBuying(this, testValue.tokenCount, testValue.collectionId0);
-      let freeIds = await this.adminCarBarContract.fetchFreeIds(this.admin.address, testValue.collectionId0);
+      let freeIds = await this.adminCarBarContract.fetchFreeIds(
+        this.admin.address,
+        testValue.collectionId0,
+      );
       expect(freeIds.length).to.equal(testValue.tokenCount - 1);
       expect(freeIds[0]).to.equal(1);
       expect(freeIds[1]).to.equal(2);
       expect(freeIds[2]).to.equal(3);
-      freeIds = await this.adminCarBarContract.fetchFreeIds(this.user1.address, testValue.collectionId0);
+      freeIds = await this.adminCarBarContract.fetchFreeIds(
+        this.user1.address,
+        testValue.collectionId0,
+      );
       expect(freeIds.length).to.equal(1);
       expect(freeIds[0]).to.equal(0);
 
-      await this.adminCarBarContract.updateToken(testValue.collectionId0, testValue.tokenId0, testValue.todayPlus3d1m);
-      freeIds = await this.adminCarBarContract.fetchFreeIds(this.user1.address, testValue.collectionId0);
+      await this.adminCarBarContract.updateToken(
+        testValue.collectionId0,
+        testValue.tokenId0,
+        testValue.todayPlus3d1m,
+      );
+      freeIds = await this.adminCarBarContract.fetchFreeIds(
+        this.user1.address,
+        testValue.collectionId0,
+      );
       expect(freeIds.length).to.equal(1);
 
-      await this.adminCarBarContract.updateToken(testValue.collectionId0, testValue.tokenId0, testValue.todayPlus3d1m);
-      freeIds = await this.adminCarBarContract.fetchFreeIds(this.user1.address, testValue.collectionId0);
+      await this.adminCarBarContract.updateToken(
+        testValue.collectionId0,
+        testValue.tokenId0,
+        testValue.todayPlus3d1m,
+      );
+      freeIds = await this.adminCarBarContract.fetchFreeIds(
+        this.user1.address,
+        testValue.collectionId0,
+      );
       expect(freeIds.length).to.equal(1);
 
       await this.adminCarBarContract.updateToken(testValue.collectionId0, testValue.tokenId0, 0);
-      freeIds = await this.adminCarBarContract.fetchFreeIds(this.user1.address, testValue.collectionId0);
+      freeIds = await this.adminCarBarContract.fetchFreeIds(
+        this.user1.address,
+        testValue.collectionId0,
+      );
       expect(freeIds.length).to.equal(1);
       expect(freeIds[0]).to.equal(testValue.tokenId0);
 
       await this.adminCarBarContract.updateToken(testValue.collectionId0, testValue.tokenId0, 0);
-      freeIds = await this.adminCarBarContract.fetchFreeIds(this.user1.address, testValue.collectionId0);
+      freeIds = await this.adminCarBarContract.fetchFreeIds(
+        this.user1.address,
+        testValue.collectionId0,
+      );
       expect(freeIds.length).to.equal(1);
       expect(freeIds[0]).to.equal(testValue.tokenId0);
     });
 
     it("should procced the transfer of the updated token", async function () {
       await initCollectionsRealWithBuying(this, testValue.tokenCount, testValue.collectionId0);
-      await this.adminCarBarContract.updateToken(testValue.collectionId0, testValue.tokenId0, testValue.todayPlus3d1m);
+      await this.adminCarBarContract.updateToken(
+        testValue.collectionId0,
+        testValue.tokenId0,
+        testValue.todayPlus3d1m,
+      );
       await this.user1CarBarContract.transferToken(
         this.user1.address,
         this.user2.address,
@@ -452,15 +546,21 @@ export function shouldBehaveCorrectTransfer(): void {
       const tokens = await this.adminCarBarContract.fetchTokens(testValue.collectionId0);
       expect(tokens[0].owner).to.equal(this.user2.address);
       expect(tokens[1].owner).to.equal(this.admin.address);
-      expect(await this.adminCarBarContract.balanceOf(this.user1.address, testValue.collectionId0)).to.equal(
-        testValue.zero,
-      );
-      expect(await this.adminCarBarContract.balanceOf(this.user2.address, testValue.collectionId0)).to.equal(1);
+      expect(
+        await this.adminCarBarContract.balanceOf(this.user1.address, testValue.collectionId0),
+      ).to.equal(testValue.zero);
+      expect(
+        await this.adminCarBarContract.balanceOf(this.user2.address, testValue.collectionId0),
+      ).to.equal(1);
     });
 
     it("should throw error when user tries to transfer expired token", async function () {
       await initCollectionsRealWithBuying(this, testValue.tokenCount, testValue.collectionId0);
-      await this.adminCarBarContract.updateToken(testValue.collectionId0, testValue.tokenId0, testValue.todayMinus1m);
+      await this.adminCarBarContract.updateToken(
+        testValue.collectionId0,
+        testValue.tokenId0,
+        testValue.todayMinus1m,
+      );
 
       await expect(
         this.user1CarBarContract.transferToken(

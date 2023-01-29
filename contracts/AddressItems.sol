@@ -22,7 +22,11 @@ contract AddressItems {
         _;
     }
 
-    function filledCheck(address user, uint32 collectionId, uint32 index) private view returns (bool) {
+    function filledCheck(
+        address user,
+        uint32 collectionId,
+        uint32 index
+    ) private view returns (bool) {
         return _addressItems[user][collectionId].freeIds.length > index;
     }
 
@@ -58,11 +62,19 @@ contract AddressItems {
         removeItem(addressItem, index);
     }
 
-    function findRawIndex(address user, uint32 collectionId, uint32 tokenId) private view returns (uint32) {
+    function findRawIndex(
+        address user,
+        uint32 collectionId,
+        uint32 tokenId
+    ) private view returns (uint32) {
         return _addressItems[user][collectionId].map[tokenId];
     }
 
-    function findCorrectIndex(address user, uint32 collectionId, uint32 tokenId) private view returns (uint32) {
+    function findCorrectIndex(
+        address user,
+        uint32 collectionId,
+        uint32 tokenId
+    ) private view returns (uint32) {
         return _addressItems[user][collectionId].map[tokenId] - MAP_OFFSET;
     }
 
@@ -82,7 +94,12 @@ contract AddressItems {
         addressItem.freeIds.push(tokenId);
     }
 
-    function transferFreeId(address from, address to, uint32 collectionId, uint32 tokenId) internal {
+    function transferFreeId(
+        address from,
+        address to,
+        uint32 collectionId,
+        uint32 tokenId
+    ) internal {
         removeFreeIdByTokenId(from, collectionId, tokenId);
         pushFreeId(to, collectionId, tokenId);
     }

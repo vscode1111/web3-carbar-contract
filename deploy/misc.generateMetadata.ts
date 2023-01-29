@@ -18,7 +18,8 @@ const CONTRACT_NAME = `carbar_test_${deployValue.nftPostfix}`;
 const DICTIONARY: Record<string | number, IMetadata> = {
   contract: {
     name: CONTRACT_NAME,
-    image: "https://shiftdelete.net/wp-content/uploads/2022/02/tesla-uygulama-magazasi-bu-yil-tanitabilir1.jpg",
+    image:
+      "https://shiftdelete.net/wp-content/uploads/2022/02/tesla-uygulama-magazasi-bu-yil-tanitabilir1.jpg",
     banner: "https://cdn.webrazzi.com/uploads/2015/09/tesla-model-x3.jpg",
     description: `${CONTRACT_NAME} description`,
   },
@@ -39,12 +40,14 @@ const DICTIONARY: Record<string | number, IMetadata> = {
   },
 };
 
-const func: DeployFunction = async (hre: HardhatRuntimeEnvironment): Promise<void> => {
+const func: DeployFunction = async (): Promise<void> => {
   await callWithTimer(async () => {
     const dir = `${appRoot.toString()}/nft/${deployValue.nftPostfix}`;
 
     if (!fs.existsSync(dir)) {
-      fs.mkdirSync(dir, { recursive: true });
+      fs.mkdirSync(dir, {
+        recursive: true,
+      });
     }
 
     Object.entries(DICTIONARY).forEach(([key, value]) => {

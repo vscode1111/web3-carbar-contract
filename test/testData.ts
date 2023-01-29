@@ -38,7 +38,10 @@ export const testValue = {
   todayPlus3d1m: toUnixTime(dayjs().add(3, "day").add(1, "minute").toDate()),
 };
 
-export function getTestCollections(tokenCount = TOKEN_COUNT, expiryDate = testValue.endTime2023): ICollectionItem[] {
+export function getTestCollections(
+  tokenCount = TOKEN_COUNT,
+  expiryDate = testValue.endTime2023,
+): ICollectionItem[] {
   return [
     {
       name: "Tesla Model 3 Stnd (1 Day)",
@@ -69,7 +72,8 @@ export const errorMessage = {
   userMustHaveFunds: "User must have funds",
   collectionMustHave1token: "The collection must have at least 1 available token",
   collectionExpirationMustBeGreater: "Collection expiration must be greater than the current time",
-  tokenExpirationMustBeMore: "Token expiration must be more than a certain period from the current time",
+  tokenExpirationMustBeMore:
+    "Token expiration must be more than a certain period from the current time",
   contractMustHaveSufficientFunds: "Contract must have sufficient funds",
   dataShouldBeCorrect: "Length of ids, amounts should be the correct",
   insufficientBalance: "ERC1155: insufficient balance for transfer",

@@ -2971,6 +2971,7 @@ __metadata:
     eslint: ^8.28.0
     eslint-config-prettier: ^8.5.0
     ethers: ^5.7.2
+    fastify-tsconfig: ^1.0.1
     fs-extra: ^11.1.0
     hardhat: ^2.12.3
     hardhat-deploy: ^0.11.21
@@ -4717,6 +4718,13 @@ __metadata:
   version: 2.0.6
   resolution: "fast-levenshtein@npm:2.0.6"
   checksum: 92cfec0a8dfafd9c7a15fba8f2cc29cd0b62b85f056d99ce448bbcd9f708e18ab2764bda4dd5158364f4145a7c72788538994f0d1787b956ef0d1062b0f7c24c
+  languageName: node
+  linkType: hard
+
+"fastify-tsconfig@npm:^1.0.1":
+  version: 1.0.1
+  resolution: "fastify-tsconfig@npm:1.0.1"
+  checksum: 9e90201d5fa90d4c4d30c3384df1c256c3f359e49395e924d34425012c3ee59b0065514a450780bf174e62cc9930ef7d5d5c984b62a6cacba03c413ef91549d4
   languageName: node
   linkType: hard
 
