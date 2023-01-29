@@ -4,7 +4,7 @@ import { TestUSDT } from "typechain-types/contracts/TestUSDT";
 import { CarBarContract__factory } from "typechain-types/factories/contracts/CarBarContract__factory";
 import { TestUSDT__factory } from "typechain-types/factories/contracts/TestUSDT__factory";
 
-import { ContextBase } from "./types";
+import { ContextBase } from "../types";
 
 export async function deployCarBarContractFixture(): Promise<ContextBase> {
   const [admin, user1, user2, shop] = await ethers.getSigners();

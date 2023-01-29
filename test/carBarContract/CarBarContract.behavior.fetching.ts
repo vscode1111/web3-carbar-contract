@@ -1,8 +1,8 @@
 import { expect } from "chai";
 import { BigNumber } from "ethers";
 
-import { testValue } from "./testData";
-import { checkToken, getCollectionName, initCollections, initCollectionsReal } from "./utils";
+import { testValue } from "../testData";
+import { checkToken, getCollectionName, initCollections, initCollectionsReal } from "../utils";
 
 export function shouldBehaveCorrectFetching(): void {
   describe("fetching", () => {

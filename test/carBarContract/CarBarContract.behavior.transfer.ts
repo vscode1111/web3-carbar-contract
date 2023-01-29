@@ -1,8 +1,8 @@
 import { time } from "@nomicfoundation/hardhat-network-helpers";
 import { expect } from "chai";
 
-import { Sold, errorMessage, testValue } from "./testData";
-import { initCollectionsReal, initCollectionsRealWithBuying, vmEsceptionText } from "./utils";
+import { Sold, errorMessage, testValue } from "../testData";
+import { initCollectionsReal, initCollectionsRealWithBuying, vmEsceptionText } from "../utils";
 
 export function shouldBehaveCorrectTransfer(): void {
   describe("transfer", () => {

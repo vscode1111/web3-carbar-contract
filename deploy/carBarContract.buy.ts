@@ -1,7 +1,7 @@
 import { CONTRACTS, TOKENS } from "constants/addresses";
 import { DeployFunction } from "hardhat-deploy/types";
 import { HardhatRuntimeEnvironment } from "hardhat/types";
-import { testValue } from "test/carBarContract/testData";
+import { testValue } from "test/testData";
 import { CarBarContract } from "typechain-types/contracts/CarBarContract";
 import { TestUSDT } from "typechain-types/contracts/TestUSDT";
 import { CarBarContract__factory } from "typechain-types/factories/contracts/CarBarContract__factory";

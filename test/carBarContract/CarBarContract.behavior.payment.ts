@@ -1,8 +1,8 @@
 import { expect } from "chai";
 import { TokenSoldEvent } from "typechain-types/contracts/CarBarContract";
 
-import { Sold, errorMessage, testValue } from "./testData";
-import { initCollectionsReal, initCollectionsRealWithBuying, vmEsceptionText } from "./utils";
+import { Sold, errorMessage, testValue } from "../testData";
+import { initCollectionsReal, initCollectionsRealWithBuying, vmEsceptionText } from "../utils";
 
 export function shouldBehaveCorrectPayment(): void {
   describe("payment", () => {
