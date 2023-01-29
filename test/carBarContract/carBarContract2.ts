@@ -2,10 +2,10 @@ import { loadFixture } from "@nomicfoundation/hardhat-network-helpers";
 import { SignerWithAddress } from "@nomiclabs/hardhat-ethers/dist/src/signer-with-address";
 import { ethers } from "hardhat";
 
-import { shouldBehaveCorrectFetching } from "./CarBarContract.behavior.fetching";
-import { shouldBehaveCorrectPayment } from "./CarBarContract.behavior.payment";
-import { shouldBehaveCorrectTransfer } from "./CarBarContract.behavior.transfer";
-import { deployCarBarContractFixture } from "./CarBarContract.fixture";
+import { shouldBehaveCorrectFetching } from "./carBarContract.behavior.fetching2";
+import { shouldBehaveCorrectPayment } from "./carBarContract.behavior.payment2";
+import { shouldBehaveCorrectTransfer } from "./carBarContract.behavior.transfer2";
+import { deployCarBarContractFixture } from "./carBarContract.fixture2";
 
 describe("CarBarContract", function () {
   before(async function () {
