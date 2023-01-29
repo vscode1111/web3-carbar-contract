@@ -1,7 +1,6 @@
 import appRoot from "app-root-path";
 import fs from "fs";
 import { DeployFunction } from "hardhat-deploy/types";
-import { HardhatRuntimeEnvironment } from "hardhat/types";
 import { callWithTimer } from "utils/common";
 
 import { deployValue } from "./deployData";

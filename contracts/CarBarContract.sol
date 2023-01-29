@@ -9,7 +9,7 @@ import "@openzeppelin/contracts-upgradeable/proxy/utils/UUPSUpgradeable.sol";
 import "@openzeppelin/contracts-upgradeable/security/ReentrancyGuardUpgradeable.sol";
 import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 import "@openzeppelin/contracts-upgradeable/utils/StringsUpgradeable.sol";
-import "./AddressItems.sol";
+import "./Address2DItems.sol";
 
 import "hardhat/console.sol";
 
@@ -19,7 +19,7 @@ contract CarBarContract is
     OwnableUpgradeable,
     UUPSUpgradeable,
     ReentrancyGuardUpgradeable,
-    AddressItems
+    Address2DItems
 {
     using StringsUpgradeable for uint256;
 

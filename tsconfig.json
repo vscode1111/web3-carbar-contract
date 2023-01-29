@@ -13,7 +13,7 @@
     "esModuleInterop": true,
     "emitDecoratorMetadata": true,
     "experimentalDecorators": true,
-    "noUnusedLocals": false,
+    "noUnusedLocals": true,
     "paths": {
       "constants": ["./constants"],
       "constants/*": ["./constants/*"],

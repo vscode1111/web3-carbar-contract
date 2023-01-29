@@ -3,7 +3,7 @@ pragma solidity ^0.8.17;
 
 import "hardhat/console.sol";
 
-contract AddressItems {
+contract Address2DItems {
     mapping(address => mapping(uint32 => AddressItem)) private _addressItems;
 
     uint32 constant MAP_OFFSET = 1000;
