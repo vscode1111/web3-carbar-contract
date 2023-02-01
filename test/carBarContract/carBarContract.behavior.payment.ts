@@ -72,6 +72,69 @@ export function shouldBehaveCorrectPayment(): void {
       expect(await this.adminTestUSDT.totalSupply()).to.equal(testValue.userInitialBalance0);
     });
 
+    it("should procced the payment of the token by the user after update token", async function () {
+      await this.adminTestUSDT.mint(this.user1.address, testValue.userInitialBalance0);
+      await initCollectionsReal(this.adminCarBarContract);
+
+      await this.user1TestUSDT.approve(this.adminCarBarContract.address, testValue.price0);
+
+      const timeGap = await this.adminCarBarContract.TIME_GAP();
+
+      await this.adminCarBarContract.updateToken(
+        testValue.collectionId0,
+        testValue.tokenId0,
+        timeGap - 1,
+      );
+
+      await this.user1CarBarContract.buyToken(testValue.collectionId0);
+
+      let tokens = await this.adminCarBarContract.fetchTokens(testValue.collectionId0);
+      expect(tokens[0].owner).to.equal(this.user1.address);
+      expect(tokens[0].sold).to.equal(Sold.TokenSold);
+      expect(tokens[0].expiryDate).to.equal(timeGap - 1);
+      expect(tokens[1].owner).to.equal(this.admin.address);
+      expect(tokens[1].sold).to.equal(Sold.None);
+      expect(tokens[1].expiryDate).to.equal(0);
+      expect(tokens[2].owner).to.equal(this.admin.address);
+      expect(tokens[2].sold).to.equal(Sold.None);
+      expect(tokens[2].expiryDate).to.equal(0);
+    });
+
+    it("should procced the payment of the token of second collection by the user", async function () {
+      await this.adminTestUSDT.mint(this.user1.address, testValue.userInitialBalance0);
+      await initCollectionsReal(this.adminCarBarContract);
+
+      await this.user1TestUSDT.approve(this.adminCarBarContract.address, testValue.price1);
+
+      const tx = await this.user1CarBarContract.buyToken(testValue.collectionId1);
+      const receipt = await tx.wait();
+
+      const tokenSoldEvent = receipt.events?.find(
+        (item) => item.event === "TokenSold",
+      ) as TokenSoldEvent;
+
+      expect(tokenSoldEvent).to.not.be.undefined;
+
+      const { collectionId, tokenId, seller, owner, price, timestamp } = tokenSoldEvent?.args;
+
+      const now = Math.round(new Date().getTime() / 1000);
+
+      expect(collectionId).to.be.equal(testValue.collectionId1);
+      expect(tokenId).to.be.equal(0);
+      expect(seller).to.be.equal(this.admin.address);
+      expect(owner).to.be.equal(this.user1.address);
+      expect(price).to.be.equal(testValue.price1);
+      expect(timestamp).to.be.closeTo(now, 30);
+
+      expect(await this.adminTestUSDT.balanceOf(this.user1.address)).to.equal(
+        testValue.userInitialBalance0.sub(testValue.price1),
+      );
+      expect(await this.adminTestUSDT.balanceOf(this.adminCarBarContract.address)).to.equal(
+        testValue.price1,
+      );
+      expect(await this.adminTestUSDT.totalSupply()).to.equal(testValue.userInitialBalance0);
+    });
+
     it("should throw error when user tries to buy token withount allowance", async function () {
       await this.adminTestUSDT.mint(this.user1.address, testValue.userInitialBalance0);
       await initCollectionsReal(this.adminCarBarContract);

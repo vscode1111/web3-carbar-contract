@@ -18,6 +18,7 @@
     "deploy:buy": "hardhat deploy --tags CarBarContract:buy",
     "deploy:update-token": "hardhat deploy --tags CarBarContract:update-token",
     "deploy:call-event": "hardhat deploy --tags CarBarContract:call-event",
+    "deploy:withdraw": "hardhat deploy --tags CarBarContract:withdraw",
     "deploy:generate-metadata": "hardhat deploy --tags misc:generate-metadata",
     "lint": "yarn lint:sol && yarn lint:ts && yarn prettier:check",
     "lint:sol": "solhint --config ./.solhint.json --max-warnings 0 \"contracts/**/*.sol\"",

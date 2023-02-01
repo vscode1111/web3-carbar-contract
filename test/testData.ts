@@ -1,7 +1,7 @@
 import dayjs from "dayjs";
 import { BigNumber } from "ethers";
-import { toUnixTime, toWei } from "utils/common";
 
+import { toUnixTime, toWei } from "../utils/common";
 import { ICollectionItem } from "./types";
 
 const PROD_DATA = false;

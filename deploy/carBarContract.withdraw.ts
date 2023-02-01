@@ -1,13 +1,15 @@
-import { CONTRACTS } from "constants/addresses";
+import { CONTRACTS, TOKENS } from "constants/addresses";
 import { DeployFunction } from "hardhat-deploy/types";
 import { HardhatRuntimeEnvironment } from "hardhat/types";
-import { testValue } from "test/testData";
 import { CarBarContract } from "typechain-types/contracts/CarBarContract";
+import { TestUSDT } from "typechain-types/contracts/TestUSDT";
 import { CarBarContract__factory } from "typechain-types/factories/contracts/CarBarContract__factory";
+import { TestUSDT__factory } from "typechain-types/factories/contracts/TestUSDT__factory";
 import { DeployNetworks } from "types/common";
 import { callWithTimer } from "utils/common";
 
 import { deployValue } from "./deployData";
+import { getUSDTDecimalsFactor } from "./utils";
 
 const func: DeployFunction = async (hre: HardhatRuntimeEnvironment): Promise<void> => {
   await callWithTimer(async () => {
@@ -17,9 +19,19 @@ const func: DeployFunction = async (hre: HardhatRuntimeEnvironment): Promise<voi
     } = hre;
     const contractAddress = CONTRACTS.CAR_BAR[name as keyof DeployNetworks];
 
-    console.log(`CarBarContract ${contractAddress} starts transfering...`);
+    console.log(`CarBarContract ${contractAddress} starts token withdrawing...`);
 
     const [admin] = await hre.ethers.getSigners();
+
+    const testUsdtFactory = <TestUSDT__factory>await ethers.getContractFactory("TestUSDT");
+
+    const usdtTokenAddress = TOKENS.USDT[name as keyof DeployNetworks];
+
+    const testUSDT = <TestUSDT>await testUsdtFactory.connect(admin).attach(usdtTokenAddress);
+
+    const factor = await getUSDTDecimalsFactor(testUSDT);
+
+    const amount = await testUSDT.balanceOf(contractAddress);
 
     const carBarContractFactory = <CarBarContract__factory>(
       await ethers.getContractFactory("CarBarContract")
@@ -28,19 +40,15 @@ const func: DeployFunction = async (hre: HardhatRuntimeEnvironment): Promise<voi
       await carBarContractFactory.connect(admin).attach(contractAddress)
     );
 
-    let tx = await adminCarBarContract.safeTransferFrom(
-      admin.address,
-      deployValue.userAddress,
-      deployValue.collectionId,
-      1,
-      testValue.emptyData,
-    );
-    console.log(`Call safeTransferFrom...`);
+    let tx = await adminCarBarContract.withdraw(deployValue.withdrawAddress, amount);
+    console.log(`Call withdraw...`);
     await tx.wait();
-    console.log(`Token of ${deployValue.collectionId} collection was safeTransfered`);
+    console.log(
+      `${amount.toNumber() / factor} USDT was withdrawed to ${deployValue.withdrawAddress}`,
+    );
   }, hre);
 };
 
-func.tags = ["CarBarContract:transfer"];
+func.tags = ["CarBarContract:withdraw"];
 
 export default func;

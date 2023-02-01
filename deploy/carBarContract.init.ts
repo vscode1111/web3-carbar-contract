@@ -10,7 +10,7 @@ import { callWithTimer } from "utils/common";
 import { deployValue } from "./deployData";
 
 const HOST_URL = "https://carbar.online/nft_json";
-const INIT_COLLECTION = false;
+const INIT_COLLECTION = true;
 
 const func: DeployFunction = async (hre: HardhatRuntimeEnvironment): Promise<void> => {
   await callWithTimer(async () => {
@@ -20,7 +20,7 @@ const func: DeployFunction = async (hre: HardhatRuntimeEnvironment): Promise<voi
     } = hre;
     const contractAddress = CONTRACTS.CAR_BAR[name as keyof DeployNetworks];
 
-    console.log(`CarBarContract [${contractAddress}] is initiating...`);
+    console.log(`CarBarContract ${contractAddress} is initiating...`);
 
     const [admin] = await hre.ethers.getSigners();
 

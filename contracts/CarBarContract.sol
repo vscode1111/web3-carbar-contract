@@ -21,6 +21,7 @@ contract CarBarContract is
     ReentrancyGuardUpgradeable,
     Address2DItems
 {
+    using StringsUpgradeable for uint32;
     using StringsUpgradeable for uint256;
 
     function initialize(address usdtTokenAddress) public initializer {
@@ -91,10 +92,8 @@ contract CarBarContract is
     event TokenUpdated(uint32 indexed collectionId, uint32 indexed tokenId, uint32 timestamp);
 
     modifier onlyFilledCollection(uint32 collectionId) {
-        require(
-            balanceOf(owner(), collectionId) >= 1,
-            "The collection must have at least 1 available token"
-        );
+        (bool success, ) = getValidFreeId(owner(), collectionId);
+        require(success, "The collection must have at least 1 available token");
         _;
     }
 
@@ -113,7 +112,7 @@ contract CarBarContract is
         uint32 timeOffset
     ) private view returns (bool) {
         TokenItem memory token = fetchToken(collectionId, tokenId);
-        return token.expiryDate == 0 || block.timestamp <= token.expiryDate - timeOffset;
+        return token.expiryDate <= timeOffset || block.timestamp <= token.expiryDate - timeOffset;
     }
 
     modifier onlyActualToken(
@@ -254,7 +253,7 @@ contract CarBarContract is
     ) external nonReentrant onlyFilledCollection(collectionId) onlyActualCollection(collectionId) {
         CollectionItem memory collection = fetchCollection(collectionId);
         uint256 amount = collection.price;
-        address owner = address(owner());
+        address owner_ = address(owner());
         address sender = _msgSender();
 
         require(
@@ -263,7 +262,11 @@ contract CarBarContract is
         );
         require(_usdtToken.balanceOf(sender) >= amount, "User must have funds");
 
-        uint32 tokenId = getFreeId(owner, collectionId, 0);
+        (bool success, uint32 tokenId) = getValidFreeId(owner_, collectionId);
+
+        if (!success) {
+            revert("Couldn't find valid free id");
+        }
 
         TokenItem storage token = _tokenItems[collectionId][tokenId];
         _transferToken(token.owner, sender, collectionId, tokenId);
@@ -272,7 +275,7 @@ contract CarBarContract is
 
         token.sold = Sold.TokenSold;
 
-        emit TokenSold(collectionId, tokenId, owner, sender, amount, uint32(block.timestamp));
+        emit TokenSold(collectionId, tokenId, owner_, sender, amount, uint32(block.timestamp));
     }
 
     function _transferToken(
@@ -319,10 +322,7 @@ contract CarBarContract is
         return amount;
     }
 
-    function getValidFreeId(
-        address user,
-        uint32 collectionId
-    ) private view onlyFilledFreeIds(user, collectionId, 0) returns (bool, uint32) {
+    function getValidFreeId(address user, uint32 collectionId) private view returns (bool, uint32) {
         uint32[] memory freeIds = fetchFreeIds(user, collectionId);
         uint32 tokenId;
 

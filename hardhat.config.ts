@@ -28,12 +28,10 @@ if (userPrivateKey.length < 3) {
   throw new Error("Please set your USER_PRIVATE_KEY in a .env file");
 }
 
-function getChainConfig(): NetworkUserConfig {
-  return {
-    url: providerUrl,
-    accounts: [adminPrivateKey, userPrivateKey],
-  };
-}
+const chainConfig: NetworkUserConfig = {
+  url: providerUrl,
+  accounts: [adminPrivateKey, userPrivateKey],
+};
 
 const config: HardhatUserConfig = {
   // defaultNetwork: "mumbai",
@@ -51,8 +49,21 @@ const config: HardhatUserConfig = {
     src: "./contracts",
   },
   networks: {
-    polygon: getChainConfig(),
-    mumbai: getChainConfig(),
+    hardhat: {
+      forking: {
+        enabled: false,
+        url: providerUrl,
+        // blockNumber: 38747028, // <-- edit here
+        blockNumber: 38759005, // <-- edit here
+      },
+      initialBaseFeePerGas: 0, // workaround from https://github.com/sc-forks/solidity-coverage/issues/652#issuecomment-896330136 . Remove when that issue is closed.
+      mining: {
+        auto: true,
+      },
+      gasPrice: 0,
+    },
+    polygon: chainConfig,
+    mumbai: chainConfig,
   },
   paths: {
     artifacts: "./artifacts",

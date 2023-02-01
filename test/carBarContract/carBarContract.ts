@@ -3,6 +3,7 @@ import { SignerWithAddress } from "@nomiclabs/hardhat-ethers/dist/src/signer-wit
 import { ethers } from "hardhat";
 
 import { shouldBehaveCorrectFetching } from "./carBarContract.behavior.fetching";
+import { shouldBehaveCorrectForking } from "./carBarContract.behavior.forking";
 import { shouldBehaveCorrectPayment } from "./carBarContract.behavior.payment";
 import { shouldBehaveCorrectTransfer } from "./carBarContract.behavior.transfer";
 import { deployCarBarContractFixture } from "./carBarContract.fixture";
@@ -40,4 +41,5 @@ describe("CarBarContract", function () {
   shouldBehaveCorrectFetching();
   shouldBehaveCorrectPayment();
   shouldBehaveCorrectTransfer();
+  shouldBehaveCorrectForking();
 });

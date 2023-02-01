@@ -17,6 +17,8 @@
     "paths": {
       "constants": ["./constants"],
       "constants/*": ["./constants/*"],
+      "deploy": ["./deploy"],
+      "deploy/*": ["./deploy/*"],
       "types": ["./types"],
       "types/*": ["./types/*"],
       "utils": ["./utils"],

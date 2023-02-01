@@ -16,7 +16,7 @@ const func: DeployFunction = async (hre: HardhatRuntimeEnvironment): Promise<voi
     } = hre;
     const contractAddress = CONTRACTS.CAR_BAR[name as keyof DeployNetworks];
 
-    console.log(`CarBarContract [${contractAddress}] starts token updating...`);
+    console.log(`CarBarContract ${contractAddress} starts token updating...`);
 
     const [admin] = await hre.ethers.getSigners();
 

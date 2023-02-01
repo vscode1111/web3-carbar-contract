@@ -1,8 +1,8 @@
 import { CONTRACTS, TOKENS } from "constants/addresses";
+import { ContractTransaction } from "ethers";
 import { DeployFunction } from "hardhat-deploy/types";
 import { HardhatRuntimeEnvironment } from "hardhat/types";
-import { testValue } from "test/testData";
-import { CarBarContract } from "typechain-types/contracts/CarBarContract";
+import { CarBarContract, TokenSoldEvent } from "typechain-types/contracts/CarBarContract";
 import { TestUSDT } from "typechain-types/contracts/TestUSDT";
 import { CarBarContract__factory } from "typechain-types/factories/contracts/CarBarContract__factory";
 import { TestUSDT__factory } from "typechain-types/factories/contracts/TestUSDT__factory";
@@ -10,6 +10,7 @@ import { DeployNetworks } from "types/common";
 import { callWithTimer } from "utils/common";
 
 import { deployValue } from "./deployData";
+import { getUSDTDecimalsFactor } from "./utils";
 
 const func: DeployFunction = async (hre: HardhatRuntimeEnvironment): Promise<void> => {
   await callWithTimer(async () => {
@@ -27,12 +28,6 @@ const func: DeployFunction = async (hre: HardhatRuntimeEnvironment): Promise<voi
     const testUSDTFactory = <TestUSDT__factory>await ethers.getContractFactory("TestUSDT");
     const testUSDT = <TestUSDT>await testUSDTFactory.connect(user).attach(usdtAddress);
 
-    let tx = await testUSDT.approve(carBarAddress, testValue.price0);
-
-    console.log(`Call approve...`);
-    await tx.wait();
-    console.log(`USDT ${testValue.price0.toNumber()} was approved`);
-
     const carBarContractFactory = <CarBarContract__factory>(
       await ethers.getContractFactory("CarBarContract")
     );
@@ -40,10 +35,33 @@ const func: DeployFunction = async (hre: HardhatRuntimeEnvironment): Promise<voi
       await carBarContractFactory.connect(user).attach(carBarAddress)
     );
 
+    const collections = await carBarContract.fetchCollections();
+    const factor = await getUSDTDecimalsFactor(testUSDT);
+
+    const price = collections[deployValue.collectionId].price;
+    console.log(`${price.toNumber() / factor} USDT price`);
+
+    const allowance = await testUSDT.allowance(user.address, carBarAddress);
+    console.log(`${allowance.toNumber() / factor} USDT was allowed`);
+
+    let tx: ContractTransaction;
+
+    if (price.gt(allowance)) {
+      tx = await testUSDT.approve(carBarAddress, price);
+      console.log(`Call approve...`);
+      await tx.wait();
+      console.log(`${price.toNumber() / factor} USDT was approved`);
+    }
+
     tx = await carBarContract.buyToken(deployValue.collectionId);
     console.log(`Call buyToken...`);
-    await tx.wait();
-    console.log(`Token ${deployValue.collectionId} was bought`);
+    const receipt = await tx.wait();
+    const tokenSoldEvent = receipt.events?.find(
+      (item) => item.event === "TokenSold",
+    ) as TokenSoldEvent;
+    const { collectionId, tokenId } = tokenSoldEvent?.args;
+
+    console.log(`Token ${collectionId}/${tokenId} was bought`);
   }, hre);
 };
 

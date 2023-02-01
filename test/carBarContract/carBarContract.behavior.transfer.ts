@@ -148,7 +148,7 @@ export function shouldBehaveCorrectTransfer(): void {
           [1],
           testValue.emptyData,
         ),
-      ).to.be.rejectedWith(vmEsceptionText(errorMessage.noFreeTokenId));
+      ).to.be.rejectedWith(vmEsceptionText(errorMessage.couldntFindValidFreeId));
     });
 
     it("should procced safeTransfer with update by admin", async function () {
