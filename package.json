@@ -15,6 +15,7 @@
     "deploy:init": "hardhat deploy --tags CarBarContract:init",
     "deploy:upgrade": "hardhat deploy --tags CarBarContract:upgrade",
     "deploy:transfer": "hardhat deploy --tags CarBarContract:transfer",
+    "deploy:transfer-back": "hardhat deploy --tags CarBarContract:transfer-back",
     "deploy:buy": "hardhat deploy --tags CarBarContract:buy",
     "deploy:update-token": "hardhat deploy --tags CarBarContract:update-token",
     "deploy:call-event": "hardhat deploy --tags CarBarContract:call-event",

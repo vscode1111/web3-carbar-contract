@@ -1,8 +1,8 @@
 import { toUnixTime } from "utils/common";
 
 export const deployValue = {
-  collectionId: 0,
-  tokenId: 1,
+  collectionId: 2,
+  tokenId: 0,
   today: toUnixTime(),
   // today: 0,
   nullAddress: "0x0000000000000000000000000000000000000000",
