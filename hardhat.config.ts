@@ -20,11 +20,11 @@ if (!providerUrl) {
 }
 
 const adminPrivateKey = `0x${process.env.ADMIN_PRIVATE_KEY}`;
-if (adminPrivateKey.length < 3) {
+if (adminPrivateKey.length < 20) {
   throw new Error("Please set your ADMIN_PRIVATE_KEY in a .env file");
 }
 const userPrivateKey = `0x${process.env.USER_PRIVATE_KEY}`;
-if (userPrivateKey.length < 3) {
+if (userPrivateKey.length < 20) {
   throw new Error("Please set your USER_PRIVATE_KEY in a .env file");
 }
 

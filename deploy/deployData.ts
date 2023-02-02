@@ -1,7 +1,7 @@
 import { toUnixTime } from "utils/common";
 
 export const deployValue = {
-  collectionId: 2,
+  collectionId: 0,
   tokenId: 0,
   today: toUnixTime(),
   // today: 0,

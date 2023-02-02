@@ -12,6 +12,8 @@ import { callWithTimer } from "utils/common";
 import { deployValue } from "./deployData";
 import { getUSDTDecimalsFactor } from "./utils";
 
+const BUY_TOKEN = true;
+
 const func: DeployFunction = async (hre: HardhatRuntimeEnvironment): Promise<void> => {
   await callWithTimer(async () => {
     const {
@@ -53,15 +55,17 @@ const func: DeployFunction = async (hre: HardhatRuntimeEnvironment): Promise<voi
       console.log(`${price.toNumber() / factor} USDT was approved`);
     }
 
-    tx = await carBarContract.buyToken(deployValue.collectionId);
-    console.log(`Call buyToken...`);
-    const receipt = await tx.wait();
-    const tokenSoldEvent = receipt.events?.find(
-      (item) => item.event === "TokenSold",
-    ) as TokenSoldEvent;
-    const { collectionId, tokenId } = tokenSoldEvent?.args;
+    if (BUY_TOKEN) {
+      tx = await carBarContract.buyToken(deployValue.collectionId);
+      console.log(`Call buyToken...`);
+      const receipt = await tx.wait();
+      const tokenSoldEvent = receipt.events?.find(
+        (item) => item.event === "TokenSold",
+      ) as TokenSoldEvent;
+      const { collectionId, tokenId } = tokenSoldEvent?.args;
 
-    console.log(`Token ${collectionId}/${tokenId} was bought`);
+      console.log(`Token ${collectionId}/${tokenId} was bought`);
+    }
   }, hre);
 };
 
