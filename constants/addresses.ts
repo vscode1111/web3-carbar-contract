@@ -11,7 +11,8 @@ export enum TOKEN_LIST {
 export const CONTRACTS: Record<CONTRACT_LIST, DeployNetworks> = {
   CAR_BAR: {
     mumbai: "0x4996FC03735B44b53531530a02A0EDd7C6e19b69",
-    polygon: "0x26ab88bcA08DbC6A1Fd54deDAc45cB8757E5Ea44",
+    // polygon: "0x26ab88bcA08DbC6A1Fd54deDAc45cB8757E5Ea44",
+    polygon: "0xCda48131854De037470f99A1D896Ef4f4B0D3D7e",
   },
 };
 

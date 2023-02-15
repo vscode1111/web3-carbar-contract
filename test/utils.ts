@@ -39,9 +39,9 @@ export async function initCollectionsRealWithBuying(
   collectionId = 0,
   expiryDate = testValue.endTime2023,
 ) {
-  await that.adminTestUSDT.mint(that.user1.address, testValue.userInitialBalance0);
-  await that.user1TestUSDT.approve(that.adminCarBarContract.address, testValue.price01);
-  await initCollectionsReal(that.adminCarBarContract, tokenCount, expiryDate);
+  await that.ownerTestUSDT.mint(that.user1.address, testValue.userInitialBalance0);
+  await that.user1TestUSDT.approve(that.ownerCarBarContract.address, testValue.price01);
+  await initCollectionsReal(that.ownerCarBarContract, tokenCount, expiryDate);
   await that.user1CarBarContract.buyToken(collectionId);
 }
 
@@ -67,4 +67,8 @@ export async function expectThrowsAsync(method: () => Promise<any>, errorMessage
 
 export function vmEsceptionText(text: string) {
   return `VM Exception while processing transaction: reverted with reason string '${text}'`;
+}
+
+export function getNow() {
+  return Math.round(new Date().getTime() / 1000);
 }

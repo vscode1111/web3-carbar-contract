@@ -21,13 +21,13 @@ const func: DeployFunction = async (hre: HardhatRuntimeEnvironment): Promise<voi
 
     console.log(`CarBarContract ${contractAddress} starts token withdrawing...`);
 
-    const [admin] = await hre.ethers.getSigners();
+    const [owner] = await hre.ethers.getSigners();
 
     const testUsdtFactory = <TestUSDT__factory>await ethers.getContractFactory("TestUSDT");
 
     const usdtTokenAddress = TOKENS.USDT[name as keyof DeployNetworks];
 
-    const testUSDT = <TestUSDT>await testUsdtFactory.connect(admin).attach(usdtTokenAddress);
+    const testUSDT = <TestUSDT>await testUsdtFactory.connect(owner).attach(usdtTokenAddress);
 
     const factor = await getUSDTDecimalsFactor(testUSDT);
 
@@ -36,11 +36,11 @@ const func: DeployFunction = async (hre: HardhatRuntimeEnvironment): Promise<voi
     const carBarContractFactory = <CarBarContract__factory>(
       await ethers.getContractFactory("CarBarContract")
     );
-    const adminCarBarContract = <CarBarContract>(
-      await carBarContractFactory.connect(admin).attach(contractAddress)
+    const ownerCarBarContract = <CarBarContract>(
+      await carBarContractFactory.connect(owner).attach(contractAddress)
     );
 
-    let tx = await adminCarBarContract.withdraw(deployValue.withdrawAddress, amount);
+    let tx = await ownerCarBarContract.withdraw(deployValue.withdrawAddress, amount);
     console.log(`Call withdraw...`);
     await tx.wait();
     console.log(

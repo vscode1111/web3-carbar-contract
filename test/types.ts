@@ -6,29 +6,27 @@ import { TestUSDT } from "typechain-types/contracts/TestUSDT";
 type Fixture<T> = () => Promise<T>;
 
 export interface ContextBase {
-  adminTestUSDT: TestUSDT;
+  ownerTestUSDT: TestUSDT;
   user1TestUSDT: TestUSDT;
   user2TestUSDT: TestUSDT;
-  adminCarBarContract: CarBarContract;
+  ownerCarBarContract: CarBarContract;
   user1CarBarContract: CarBarContract;
   user2CarBarContract: CarBarContract;
   shopCarBarContract: CarBarContract;
+  superOwnerCarBarContract: CarBarContract;
+  owner2CarBarContract: CarBarContract;
 }
 
 declare module "mocha" {
   export interface Context extends ContextBase {
-    admin: SignerWithAddress;
+    owner: SignerWithAddress;
     user1: SignerWithAddress;
     user2: SignerWithAddress;
     shop: SignerWithAddress;
+    superOwner: SignerWithAddress;
+    owner2: SignerWithAddress;
     loadFixture: <T>(fixture: Fixture<T>) => Promise<T>;
   }
-}
-
-export interface Signers {
-  admin: SignerWithAddress;
-  user1: SignerWithAddress;
-  user2: SignerWithAddress;
 }
 
 export interface ICollectionItem {

@@ -19,17 +19,17 @@ const func: DeployFunction = async (hre: HardhatRuntimeEnvironment): Promise<voi
 
     console.log(`CarBarContract ${contractAddress} starts transfering...`);
 
-    const [admin] = await hre.ethers.getSigners();
+    const [owner] = await hre.ethers.getSigners();
 
     const carBarContractFactory = <CarBarContract__factory>(
       await ethers.getContractFactory("CarBarContract")
     );
-    const adminCarBarContract = <CarBarContract>(
-      await carBarContractFactory.connect(admin).attach(contractAddress)
+    const ownerCarBarContract = <CarBarContract>(
+      await carBarContractFactory.connect(owner).attach(contractAddress)
     );
 
-    let tx = await adminCarBarContract.safeTransferFrom(
-      admin.address,
+    let tx = await ownerCarBarContract.safeTransferFrom(
+      owner.address,
       deployValue.userAddress,
       deployValue.collectionId,
       1,

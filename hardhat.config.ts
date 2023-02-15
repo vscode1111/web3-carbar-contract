@@ -19,9 +19,9 @@ if (!providerUrl) {
   throw new Error("Please set your PROVIDER_URL in a .env file");
 }
 
-const adminPrivateKey = `0x${process.env.ADMIN_PRIVATE_KEY}`;
-if (adminPrivateKey.length < 20) {
-  throw new Error("Please set your ADMIN_PRIVATE_KEY in a .env file");
+const ownerPrivateKey = `0x${process.env.OWNER_PRIVATE_KEY}`;
+if (ownerPrivateKey.length < 20) {
+  throw new Error("Please set your OWNER_PRIVATE_KEY in a .env file");
 }
 const userPrivateKey = `0x${process.env.USER_PRIVATE_KEY}`;
 if (userPrivateKey.length < 20) {
@@ -30,7 +30,7 @@ if (userPrivateKey.length < 20) {
 
 const chainConfig: NetworkUserConfig = {
   url: providerUrl,
-  accounts: [adminPrivateKey, userPrivateKey],
+  accounts: [ownerPrivateKey, userPrivateKey],
 };
 
 const config: HardhatUserConfig = {

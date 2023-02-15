@@ -22,21 +22,22 @@ const func: DeployFunction = async (hre: HardhatRuntimeEnvironment): Promise<voi
 
     console.log(`CarBarContract ${contractAddress} is initiating...`);
 
-    const [admin] = await hre.ethers.getSigners();
+    const [owner] = await hre.ethers.getSigners();
 
     const carBarContractFactory = <CarBarContract__factory>(
       await ethers.getContractFactory("CarBarContract")
     );
-    const adminCarBarContract = <CarBarContract>(
-      await carBarContractFactory.connect(admin).attach(contractAddress)
+    const ownerCarBarContract = <CarBarContract>(
+      await carBarContractFactory.connect(owner).attach(contractAddress)
     );
 
     console.log(`Setting init values...`);
-    let tx = await adminCarBarContract.setName(`carbar_test_${deployValue.nftPostfix}`);
+    let tx = await ownerCarBarContract.setName(`carbar_test_${deployValue.nftPostfix}`);
+    console.log(111, tx.hash);
     await tx.wait();
-    tx = await adminCarBarContract.setSymbol(`carbar_test_symbol_${deployValue.nftPostfix}`);
+    tx = await ownerCarBarContract.setSymbol(`carbar_test_symbol_${deployValue.nftPostfix}`);
     await tx.wait();
-    tx = await adminCarBarContract.setURI(`${HOST_URL}/${deployValue.nftPostfix}/`);
+    tx = await ownerCarBarContract.setURI(`${HOST_URL}/${deployValue.nftPostfix}/`);
     await tx.wait();
     console.log(`Init values were set`);
 
@@ -46,7 +47,7 @@ const func: DeployFunction = async (hre: HardhatRuntimeEnvironment): Promise<voi
       for (const collection of collections) {
         const name = collection.name;
         console.log(`Sending transaction for collection "${name}"...`);
-        const tx = await adminCarBarContract.createCollection(
+        const tx = await ownerCarBarContract.createCollection(
           collection.name,
           collection.tokenCount,
           collection.price,

@@ -3,12 +3,13 @@ pragma solidity ^0.8.17;
 
 import "@openzeppelin/contracts-upgradeable/utils/CountersUpgradeable.sol";
 import "@openzeppelin/contracts-upgradeable/token/ERC1155/ERC1155Upgradeable.sol";
-import "@openzeppelin/contracts-upgradeable/access/OwnableUpgradeable.sol";
 import "@openzeppelin/contracts-upgradeable/proxy/utils/Initializable.sol";
 import "@openzeppelin/contracts-upgradeable/proxy/utils/UUPSUpgradeable.sol";
 import "@openzeppelin/contracts-upgradeable/security/ReentrancyGuardUpgradeable.sol";
 import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 import "@openzeppelin/contracts-upgradeable/utils/StringsUpgradeable.sol";
+import "@openzeppelin/contracts-upgradeable/access/AccessControlUpgradeable.sol";
+
 import "./Address2DItems.sol";
 
 import "hardhat/console.sol";
@@ -16,21 +17,32 @@ import "hardhat/console.sol";
 contract CarBarContract is
     Initializable,
     ERC1155Upgradeable,
-    OwnableUpgradeable,
     UUPSUpgradeable,
     ReentrancyGuardUpgradeable,
+    AccessControlUpgradeable,
     Address2DItems
 {
+    bytes32 private constant SUPER_OWNER_ROLE = keccak256("SUPER_OWNER_ROLE");
+    bytes32 private constant OWNER_ROLE = keccak256("OWNER_ROLE");
+
+    address private _superOwner;
+    address private _owner;
+
     using StringsUpgradeable for uint32;
     using StringsUpgradeable for uint256;
 
     function initialize(address usdtTokenAddress) public initializer {
         __ERC1155_init("");
-        __Ownable_init();
+        __AccessControl_init();
         __UUPSUpgradeable_init();
         __ReentrancyGuard_init();
 
         _usdtToken = IERC20(usdtTokenAddress);
+
+        address sender = _msgSender();
+        _grantRole(SUPER_OWNER_ROLE, sender);
+        _superOwner = sender;
+        _owner = sender;
     }
 
     string public name;
@@ -48,8 +60,7 @@ contract CarBarContract is
     mapping(uint32 => CollectionItem) private _collectionItems;
     mapping(uint32 => mapping(uint32 => TokenItem)) private _tokenItems;
 
-    //Unused. Delete it in next contract deployment
-    string _temp;
+    uint32 private _upgradePermissionTimeLimit;
 
     struct CollectionItem {
         uint32 collectionId;
@@ -91,8 +102,32 @@ contract CarBarContract is
 
     event TokenUpdated(uint32 indexed collectionId, uint32 indexed tokenId, uint32 timestamp);
 
+    modifier onlySuperOwner() {
+        require(
+            hasRole(SUPER_OWNER_ROLE, _msgSender()),
+            "Only superOwner has right to call this function"
+        );
+        _;
+    }
+
+    modifier onlySuperOwnerOrOwner() {
+        require(
+            hasRole(SUPER_OWNER_ROLE, _msgSender()) || hasRole(OWNER_ROLE, _msgSender()),
+            "Only superOwner or owner has right to call this function"
+        );
+        _;
+    }
+
+    modifier onlySuperOwnerOrPermittedOwner() {
+        require(
+            isSuperOwnerOrPermittedOwner(_msgSender()),
+            "Only superOwner or owner who has permission can call this function"
+        );
+        _;
+    }
+
     modifier onlyFilledCollection(uint32 collectionId) {
-        (bool success, ) = getValidFreeId(owner(), collectionId);
+        (bool success, ) = getValidFreeId(superOwner(), collectionId);
         require(success, "The collection must have at least 1 available token");
         _;
     }
@@ -138,7 +173,66 @@ contract CarBarContract is
         _;
     }
 
-    function _authorizeUpgrade(address newImplementation) internal override onlyOwner {}
+    function _authorizeUpgrade(
+        address newImplementation
+    ) internal override onlySuperOwnerOrPermittedOwner {}
+
+    function setSuperOwner(address newSuperOwner) public onlySuperOwner {
+        uint32 collectionItemCount = uint32(_collectionCounter.current());
+        for (uint32 i = 0; i < collectionItemCount; i++) {
+            CollectionItem memory collection = _collectionItems[i];
+
+            for (uint32 j = 0; j < collection.tokenCount; j++) {
+                TokenItem memory token = _tokenItems[collection.collectionId][j];
+
+                if (token.owner == owner()) {
+                    _transferToken(
+                        token.owner,
+                        newSuperOwner,
+                        collection.collectionId,
+                        token.tokenId
+                    );
+                }
+            }
+        }
+
+        _revokeRole(SUPER_OWNER_ROLE, owner());
+        _grantRole(OWNER_ROLE, owner());
+        _superOwner = newSuperOwner;
+        _grantRole(SUPER_OWNER_ROLE, _superOwner);
+    }
+
+    function setOwner(address newOwner) public onlySuperOwner {
+        _revokeRole(OWNER_ROLE, owner());
+        _owner = newOwner;
+        _grantRole(OWNER_ROLE, _owner);
+    }
+
+    function superOwner() public view returns (address) {
+        return _superOwner;
+    }
+
+    function owner() public view returns (address) {
+        return _owner;
+    }
+
+    function giveUpgradePermissionToOwner(uint32 hourLimit) external onlySuperOwner {
+        _upgradePermissionTimeLimit = uint32(block.timestamp) + hourLimit * 3600;
+    }
+
+    function upgradePermissionTimeLimit() external view returns (uint32) {
+        return _upgradePermissionTimeLimit;
+    }
+
+    function isSuperOwnerOrPermittedOwner(address account) internal view returns (bool) {
+        return
+            hasRole(SUPER_OWNER_ROLE, account) ||
+            (hasRole(OWNER_ROLE, account) && block.timestamp < _upgradePermissionTimeLimit);
+    }
+
+    function hasOwnerUpgradePermission() public view returns (bool) {
+        return isSuperOwnerOrPermittedOwner(owner());
+    }
 
     function balanceOf(address account, uint256 id) public view override returns (uint256) {
         uint256 balance = super.balanceOf(account, id);
@@ -150,15 +244,15 @@ contract CarBarContract is
         return balance;
     }
 
-    function setName(string memory newName) public onlyOwner {
+    function setName(string memory newName) public onlySuperOwner {
         name = newName;
     }
 
-    function setSymbol(string memory newSymbol) public onlyOwner {
+    function setSymbol(string memory newSymbol) public onlySuperOwner {
         symbol = newSymbol;
     }
 
-    function setURI(string memory newUri) external onlyOwner {
+    function setURI(string memory newUri) external onlySuperOwner {
         _setURI(newUri);
     }
 
@@ -171,7 +265,7 @@ contract CarBarContract is
         uint32 tokenCount,
         uint256 price,
         uint32 expiryDate
-    ) external onlyOwner returns (uint32) {
+    ) external onlySuperOwner returns (uint32) {
         uint32 collectionId = uint32(_collectionCounter.current());
         _mint(_msgSender(), collectionId, tokenCount * TOKEN_UNIT, "");
         createCollectionItem(collectionId, collectionName, tokenCount, price, expiryDate);
@@ -183,7 +277,7 @@ contract CarBarContract is
     function updateCollection(
         uint32 collectionId,
         string memory collectionName
-    ) external onlyOwner returns (CollectionItem memory) {
+    ) external onlySuperOwnerOrOwner returns (CollectionItem memory) {
         CollectionItem storage collection = _collectionItems[collectionId];
         collection.collectionName = collectionName;
         return collection;
@@ -213,11 +307,11 @@ contract CarBarContract is
     }
 
     function _createTokens(uint32 collectionId, uint32 tokenCount) private {
-        address owner = _msgSender();
+        address sender = _msgSender();
         for (uint32 i = 0; i < tokenCount; i++) {
-            TokenItem memory token = TokenItem(i, owner, 0, Sold.None);
+            TokenItem memory token = TokenItem(i, sender, 0, Sold.None);
             _tokenItems[collectionId][i] = token;
-            pushFreeId(owner, collectionId, i);
+            pushFreeId(sender, collectionId, i);
         }
     }
 
@@ -225,14 +319,12 @@ contract CarBarContract is
         uint32 collectionId,
         uint32 tokenId,
         uint32 expiryDate
-    ) external onlyOwner returns (TokenItem memory) {
+    ) external onlySuperOwnerOrOwner returns (TokenItem memory) {
         TokenItem storage token = _tokenItems[collectionId][tokenId];
         token.expiryDate = expiryDate;
 
         if (expiryDate == 0) {
             pushFreeId(token.owner, collectionId, tokenId);
-        } else {
-            // removeFreeIdByTokenId(token.owner, collectionId, tokenId);
         }
 
         return token;
@@ -244,7 +336,7 @@ contract CarBarContract is
         address to,
         uint256 id,
         uint256 value
-    ) external onlyOwner {
+    ) external onlySuperOwner {
         emit TransferSingle(operator, from, to, id, value);
     }
 
@@ -253,7 +345,7 @@ contract CarBarContract is
     ) external nonReentrant onlyFilledCollection(collectionId) onlyActualCollection(collectionId) {
         CollectionItem memory collection = fetchCollection(collectionId);
         uint256 amount = collection.price;
-        address owner_ = address(owner());
+        address superOwner_ = address(superOwner());
         address sender = _msgSender();
 
         require(
@@ -262,20 +354,33 @@ contract CarBarContract is
         );
         require(_usdtToken.balanceOf(sender) >= amount, "User must have funds");
 
-        (bool success, uint32 tokenId) = getValidFreeId(owner_, collectionId);
+        (bool success, uint32 tokenId) = getValidFreeId(superOwner_, collectionId);
 
         if (!success) {
             revert("Couldn't find valid free id");
         }
 
         TokenItem storage token = _tokenItems[collectionId][tokenId];
-        _transferToken(token.owner, sender, collectionId, tokenId);
+        _transferToken(token.owner, sender, collectionId, tokenId, Sold.TokenSold);
 
         _usdtToken.transferFrom(sender, address(this), amount);
 
-        token.sold = Sold.TokenSold;
+        emit TokenSold(collectionId, tokenId, superOwner_, sender, amount, uint32(block.timestamp));
+    }
 
-        emit TokenSold(collectionId, tokenId, owner_, sender, amount, uint32(block.timestamp));
+    function _transferToken(
+        address from,
+        address to,
+        uint32 collectionId,
+        uint32 tokenId,
+        Sold sold
+    ) private returns (TokenItem memory) {
+        TokenItem storage token = _tokenItems[collectionId][tokenId];
+        token.owner = to;
+        token.sold = sold;
+        _safeTransferFrom(from, to, collectionId, TOKEN_UNIT, "");
+        transferFreeId(from, to, collectionId, tokenId);
+        return token;
     }
 
     function _transferToken(
@@ -286,7 +391,6 @@ contract CarBarContract is
     ) private returns (TokenItem memory) {
         TokenItem storage token = _tokenItems[collectionId][tokenId];
         token.owner = to;
-        token.sold = Sold.Transfer;
         _safeTransferFrom(from, to, collectionId, TOKEN_UNIT, "");
         transferFreeId(from, to, collectionId, tokenId);
         return token;
@@ -304,7 +408,7 @@ contract CarBarContract is
         onlyActualToken(collectionId, tokenId, TIME_GAP)
         returns (TokenItem memory)
     {
-        return _transferToken(from, to, collectionId, tokenId);
+        return _transferToken(from, to, collectionId, tokenId, Sold.Transfer);
     }
 
     function getValidAmount(address user, uint32 collectionId) private view returns (uint32) {
@@ -370,7 +474,7 @@ contract CarBarContract is
         }
     }
 
-    function withdraw(address to, uint256 amount) external onlyOwner nonReentrant {
+    function withdraw(address to, uint256 amount) external onlySuperOwner nonReentrant {
         require(to != address(0), "Incorrect address");
         require(
             _usdtToken.balanceOf(address(this)) >= amount,
@@ -417,5 +521,12 @@ contract CarBarContract is
 
     function contractURI() public view returns (string memory) {
         return string.concat(super.uri(0), "contract.json");
+    }
+
+    // The following functions are overrides required by Solidity.
+    function supportsInterface(
+        bytes4 interfaceId
+    ) public view override(ERC1155Upgradeable, AccessControlUpgradeable) returns (bool) {
+        return super.supportsInterface(interfaceId);
     }
 }

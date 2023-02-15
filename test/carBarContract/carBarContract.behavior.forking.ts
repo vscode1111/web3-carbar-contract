@@ -19,7 +19,7 @@ export function shouldBehaveCorrectForking(): void {
       const carBarAddress = CONTRACTS.CAR_BAR[name];
       const usdtAddress = TOKENS.USDT[name];
 
-      const admin = await ethers.getImpersonatedSigner(
+      const owner = await ethers.getImpersonatedSigner(
         "0x90Aa0e69acF6ebeD3a124625DD14A19aE8AA81b1",
       );
       const user = await ethers.getImpersonatedSigner("0x2Dd61D433319B0D0A446592376fC3613E70d686A");
@@ -29,18 +29,18 @@ export function shouldBehaveCorrectForking(): void {
       const carBarContractFactory = <CarBarContract__factory>(
         await ethers.getContractFactory("CarBarContract")
       );
-      const adminCarBarContractFactory = carBarContractFactory.connect(admin);
+      const ownerCarBarContractFactory = carBarContractFactory.connect(owner);
 
       // const userCarBarContract = <CarBarContract>(
       //   await carBarContractFactory.connect(user).attach(carBarAddress)
       // );
 
-      await upgrades.forceImport(carBarAddress, adminCarBarContractFactory);
+      await upgrades.forceImport(carBarAddress, ownerCarBarContractFactory);
 
-      const adminCarBarContract = <CarBarContract>(
-        await upgrades.upgradeProxy(carBarAddress, adminCarBarContractFactory)
+      const ownerCarBarContract = <CarBarContract>(
+        await upgrades.upgradeProxy(carBarAddress, ownerCarBarContractFactory)
       );
-      const userCarBarContract = adminCarBarContract.connect(user);
+      const userCarBarContract = ownerCarBarContract.connect(user);
 
       const collections = await userCarBarContract.fetchCollections();
 

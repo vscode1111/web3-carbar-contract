@@ -7,39 +7,43 @@ import { TestUSDT__factory } from "typechain-types/factories/contracts/TestUSDT_
 import { ContextBase } from "../types";
 
 export async function deployCarBarContractFixture(): Promise<ContextBase> {
-  const [admin, user1, user2, shop] = await ethers.getSigners();
+  const [owner, user1, user2, shop, superOwner, owner2] = await ethers.getSigners();
 
   const testUSDTFactory = <TestUSDT__factory>await ethers.getContractFactory("TestUSDT");
-  const adminTestUSDT = <TestUSDT>await testUSDTFactory.connect(admin).deploy();
-  await adminTestUSDT.deployed();
+  const ownerTestUSDT = <TestUSDT>await testUSDTFactory.connect(owner).deploy();
+  await ownerTestUSDT.deployed();
 
-  const user1TestUSDT = await adminTestUSDT.connect(user1);
-  const user2TestUSDT = await adminTestUSDT.connect(user2);
+  const user1TestUSDT = await ownerTestUSDT.connect(user1);
+  const user2TestUSDT = await ownerTestUSDT.connect(user2);
 
   const carBarContractFactory = <CarBarContract__factory>(
     await ethers.getContractFactory("CarBarContract")
   );
-  const adminCarBarContract = <CarBarContract>await upgrades.deployProxy(
+  const ownerCarBarContract = <CarBarContract>await upgrades.deployProxy(
     carBarContractFactory,
-    [adminTestUSDT.address],
+    [ownerTestUSDT.address],
     {
       initializer: "initialize",
       kind: "uups",
     },
   );
-  await adminCarBarContract.deployed();
+  await ownerCarBarContract.deployed();
 
-  const user1CarBarContract = await adminCarBarContract.connect(user1);
-  const user2CarBarContract = await adminCarBarContract.connect(user2);
-  const shopCarBarContract = await adminCarBarContract.connect(shop);
+  const user1CarBarContract = await ownerCarBarContract.connect(user1);
+  const user2CarBarContract = await ownerCarBarContract.connect(user2);
+  const shopCarBarContract = await ownerCarBarContract.connect(shop);
+  const superOwnerCarBarContract = await ownerCarBarContract.connect(superOwner);
+  const owner2CarBarContract = await ownerCarBarContract.connect(owner2);
 
   return {
-    adminTestUSDT,
+    ownerTestUSDT,
     user1TestUSDT,
     user2TestUSDT,
-    adminCarBarContract,
+    ownerCarBarContract,
     user1CarBarContract,
     user2CarBarContract,
     shopCarBarContract,
+    superOwnerCarBarContract,
+    owner2CarBarContract,
   };
 }

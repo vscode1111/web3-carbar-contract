@@ -18,16 +18,16 @@ const func: DeployFunction = async (hre: HardhatRuntimeEnvironment): Promise<voi
 
     console.log(`CarBarContract ${contractAddress} starts token updating...`);
 
-    const [admin] = await hre.ethers.getSigners();
+    const [owner] = await hre.ethers.getSigners();
 
     const carBarContractFactory = <CarBarContract__factory>(
       await ethers.getContractFactory("CarBarContract")
     );
-    const adminCarBarContract = <CarBarContract>(
-      await carBarContractFactory.connect(admin).attach(contractAddress)
+    const ownerCarBarContract = <CarBarContract>(
+      await carBarContractFactory.connect(owner).attach(contractAddress)
     );
 
-    let tx = await adminCarBarContract.updateToken(
+    let tx = await ownerCarBarContract.updateToken(
       deployValue.collectionId,
       deployValue.tokenId,
       deployValue.today,
