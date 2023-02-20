@@ -134,7 +134,7 @@ export async function smokeTest(that: ContextBase, init = true) {
 
 export function shouldBehaveCorrectSmoke(): void {
   describe("smoke test", () => {
-    it.only("it should be run correctly", async function () {
+    it("it should be run correctly", async function () {
       await smokeTest(this);
     });
   });
