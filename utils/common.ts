@@ -1,8 +1,10 @@
-import { SignerWithAddress } from "@nomiclabs/hardhat-ethers/signers";
-import { BigNumber, BigNumberish } from "ethers";
+import { BigNumber, BigNumberish, ContractReceipt, ContractTransaction } from "ethers";
 import { ethers } from "hardhat";
 import { HardhatRuntimeEnvironment } from "hardhat/types";
+import _ from "lodash";
 import { StringNumber } from "types/common";
+
+import { DiffArray } from "./DiffArray";
 
 export const DECIMAL_FACTOR = 1e18;
 const FRACTION_DIGITS = 3;
@@ -40,20 +42,37 @@ export function byteArrayToNumber(byteArray: number[]): number {
   return value;
 }
 
+export async function getBalances() {
+  const users = await ethers.getSigners();
+  return Promise.all(users.map(async (user) => toNumber(await user.getBalance())));
+}
+
+export function printBalances(balances?: number[]) {
+  return `${balances?.map((balance) => balance.toFixed(FRACTION_DIGITS)).join(", ")}`;
+}
+export function printSum(balances?: number[]) {
+  return _.sum(balances).toFixed(FRACTION_DIGITS);
+}
+
 export async function callWithTimer(
   fn: () => Promise<void>,
   hre?: HardhatRuntimeEnvironment,
   finishMessageFn?: (diff: string) => string,
 ) {
   const startTime = new Date();
-  let balance0, balance1, diffBalance: number;
-  let owner: SignerWithAddress | null = null;
+  let diffArray;
   let extText = "";
 
   if (hre) {
-    [owner] = await hre.ethers.getSigners();
-    balance0 = toNumber(await owner.getBalance());
-    extText = `, balance: ${balance0.toFixed(FRACTION_DIGITS)}`;
+    const {
+      network: { name },
+    } = hre;
+
+    const balances = await getBalances();
+    diffArray = new DiffArray(balances);
+    extText = `, network: ${name}, balances: ${printBalances(balances)} = ${_.sum(balances).toFixed(
+      FRACTION_DIGITS,
+    )}`;
   }
 
   const startMessage = `->Function was started at ${startTime.toLocaleTimeString()}${extText}`;
@@ -64,18 +83,75 @@ export async function callWithTimer(
     console.log(e);
   }
   const finishTime = new Date();
-  const diff = ((finishTime.getTime() - startTime.getTime()) / 1000).toFixed();
+  const diff = ((finishTime.getTime() - startTime.getTime()) / 1000).toFixed(1);
 
-  if (hre && owner && balance0) {
-    balance1 = toNumber(await owner.getBalance());
-    diffBalance = balance0 - balance1;
-    extText = `, balance: ${balance1.toFixed(FRACTION_DIGITS)}, diff: -${diffBalance.toFixed(
-      FRACTION_DIGITS,
-    )}`;
+  if (hre) {
+    const balances = await getBalances();
+    const costDiff = diffArray?.diff(balances);
+    extText = `, balances: ${printBalances(balances)} = ${printSum(
+      balances,
+    )}, costs: ${printBalances(costDiff)} = ${printSum(costDiff)}`;
   }
 
   const finishMessage = finishMessageFn
     ? finishMessageFn(diff)
     : `<-Function was finished at ${finishTime.toLocaleTimeString()} in ${diff} sec${extText}`;
   console.log(finishMessage);
+}
+
+export async function delay(ms: number): Promise<number> {
+  return new Promise((resolve: any) => setTimeout(resolve, ms));
+}
+
+export async function verifyContract(
+  address: string,
+  hre: HardhatRuntimeEnvironment,
+  args?: unknown,
+): Promise<void> {
+  let count = 0;
+  const maxTries = 5;
+
+  while (count < maxTries) {
+    try {
+      console.log(`=>Attempt #${count + 1} to verifying contract at ${address}...`);
+      await hre.run("verify:verify", {
+        address: address,
+        constructorArguments: args,
+      });
+      return;
+    } catch (error) {
+      console.log(error);
+      const errorObj = error as object;
+      if (
+        "message" in errorObj &&
+        typeof errorObj.message === "string" &&
+        errorObj.message.includes("Already Verified")
+      ) {
+        break;
+      }
+
+      count += 1;
+      await delay(5000);
+    }
+  }
+
+  if (count === maxTries) {
+    console.log("Failed to verify contract address %s", address);
+    throw new Error("Verification failed");
+  }
+}
+
+export async function waitForTx(
+  promise: Promise<ContractTransaction>,
+  functionName?: string,
+): Promise<ContractReceipt> {
+  if (functionName) {
+    console.log(`TX: ${functionName} ...`);
+  }
+  const tx = await promise;
+  if (functionName) {
+    console.log(`TX: ${functionName} hash: ${tx.hash} ...`);
+  }
+  const receipt = await tx.wait();
+  return receipt;
 }

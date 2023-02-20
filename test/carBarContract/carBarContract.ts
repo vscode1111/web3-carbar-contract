@@ -1,29 +1,28 @@
 import { loadFixture } from "@nomicfoundation/hardhat-network-helpers";
-import { SignerWithAddress } from "@nomiclabs/hardhat-ethers/dist/src/signer-with-address";
-import { ethers } from "hardhat";
+import { CAR_BAR_CONTRACT_NAME } from "constants/addresses";
 
 import { shouldBehaveCorrectFetching } from "./carBarContract.behavior.fetching";
 import { shouldBehaveCorrectForking } from "./carBarContract.behavior.forking";
 import { shouldBehaveCorrectPayment } from "./carBarContract.behavior.payment";
 import { shouldBehaveCorrectRoles } from "./carBarContract.behavior.roles";
+import { shouldBehaveCorrectSmoke } from "./carBarContract.behavior.smoke-test";
 import { shouldBehaveCorrectTransfer } from "./carBarContract.behavior.transfer";
 import { deployCarBarContractFixture } from "./carBarContract.fixture";
 
-describe("CarBarContract", function () {
+describe(CAR_BAR_CONTRACT_NAME, function () {
   before(async function () {
-    const signers: SignerWithAddress[] = await ethers.getSigners();
-    this.owner = signers[0];
-    this.user1 = signers[1];
-    this.user2 = signers[2];
-    this.shop = signers[3];
-    this.superOwner = signers[4];
-    this.owner2 = signers[5];
-
     this.loadFixture = loadFixture;
   });
 
   beforeEach(async function () {
+    // console.log(111, this.currentTest?.parent?.title, this.currentTest?.title);
     const {
+      owner,
+      user1,
+      user2,
+      shop,
+      superOwner,
+      owner2,
       ownerTestUSDT,
       user1TestUSDT,
       user2TestUSDT,
@@ -34,6 +33,13 @@ describe("CarBarContract", function () {
       superOwnerCarBarContract,
       owner2CarBarContract,
     } = await this.loadFixture(deployCarBarContractFixture);
+
+    this.owner = owner;
+    this.user1 = user1;
+    this.user2 = user2;
+    this.shop = shop;
+    this.superOwner = superOwner;
+    this.owner2 = owner2;
     this.ownerTestUSDT = ownerTestUSDT;
     this.user1TestUSDT = user1TestUSDT;
     this.user2TestUSDT = user2TestUSDT;
@@ -50,4 +56,5 @@ describe("CarBarContract", function () {
   shouldBehaveCorrectTransfer();
   shouldBehaveCorrectForking();
   shouldBehaveCorrectRoles();
+  shouldBehaveCorrectSmoke();
 });

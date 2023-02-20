@@ -7,44 +7,48 @@ import { HardhatUserConfig } from "hardhat/config";
 import { NetworkUserConfig } from "hardhat/types";
 import { resolve } from "path";
 import "tsconfig-paths/register";
+import { DeployNetworks } from "types/common";
 
 const dotenvConfigPath: string = process.env.DOTENV_CONFIG_PATH || "./.env";
 dotenvConfig({
   path: resolve(__dirname, dotenvConfigPath),
 });
 
-// Ensure that we have all the environment variables we need.
-const providerUrl: string | undefined = process.env.PROVIDER_URL;
-if (!providerUrl) {
-  throw new Error("Please set your PROVIDER_URL in a .env file");
+function getEnv(key: string) {
+  const envKey = process.env[key];
+  if (!envKey) {
+    throw new Error(`Please set your ${key} in a .env file`);
+  }
+  return envKey;
 }
 
-const ownerPrivateKey = `0x${process.env.OWNER_PRIVATE_KEY}`;
-if (ownerPrivateKey.length < 20) {
-  throw new Error("Please set your OWNER_PRIVATE_KEY in a .env file");
-}
-const userPrivateKey = `0x${process.env.USER_PRIVATE_KEY}`;
-if (userPrivateKey.length < 20) {
-  throw new Error("Please set your USER_PRIVATE_KEY in a .env file");
+function getChainConfig(chain: keyof DeployNetworks): NetworkUserConfig & { url?: string } {
+  return {
+    url: getEnv(`${chain.toUpperCase()}_PROVIDER_URL`),
+    accounts: [
+      `0x${getEnv("OWNER_PRIVATE_KEY")}`,
+      `0x${getEnv("USER1_PRIVATE_KEY")}`,
+      `0x${getEnv("USER2_PRIVATE_KEY")}`,
+      `0x${getEnv("SHOP_PRIVATE_KEY")}`,
+      `0x${getEnv("SUPER_OWNER_PRIVATE_KEY")}`,
+    ],
+  };
 }
 
-const chainConfig: NetworkUserConfig = {
-  url: providerUrl,
-  accounts: [ownerPrivateKey, userPrivateKey],
-};
+const defaultNetwork: keyof DeployNetworks = "polygon";
 
 const config: HardhatUserConfig = {
-  // defaultNetwork: "mumbai",
-  defaultNetwork: "polygon",
+  defaultNetwork,
   etherscan: {
     apiKey: {
+      opera: process.env.OPERASCAN_API_KEY || "",
       polygon: process.env.POLYGONSCAN_API_KEY || "",
-      polygonMumbai: process.env.POLYGONSCAN_API_KEY || "",
     },
   },
   gasReporter: {
     currency: "USD",
-    enabled: process.env.REPORT_GAS ? true : false,
+    // enabled: process.env.REPORT_GAS ? true : false,
+    enabled: false,
     excludeContracts: [],
     src: "./contracts",
   },
@@ -52,7 +56,7 @@ const config: HardhatUserConfig = {
     hardhat: {
       forking: {
         enabled: false,
-        url: providerUrl,
+        url: getChainConfig(defaultNetwork).url ?? "",
         // blockNumber: 38747028, // <-- edit here
         blockNumber: 38759005, // <-- edit here
       },
@@ -62,8 +66,8 @@ const config: HardhatUserConfig = {
       },
       gasPrice: 0,
     },
-    polygon: chainConfig,
-    mumbai: chainConfig,
+    opera: getChainConfig("opera"),
+    polygon: getChainConfig("polygon"),
   },
   paths: {
     artifacts: "./artifacts",

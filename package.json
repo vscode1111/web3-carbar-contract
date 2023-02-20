@@ -13,6 +13,7 @@
     "deploy:tusdt": "hardhat deploy --tags TestUSDT",
     "deploy:proxy": "hardhat deploy --tags CarBarContract:proxy",
     "deploy:init": "hardhat deploy --tags CarBarContract:init",
+    "deploy:fetch": "hardhat deploy --tags CarBarContract:fetch",
     "deploy:upgrade": "hardhat deploy --tags CarBarContract:upgrade",
     "deploy:transfer": "hardhat deploy --tags CarBarContract:transfer",
     "deploy:transfer-back": "hardhat deploy --tags CarBarContract:transfer-back",
@@ -20,6 +21,9 @@
     "deploy:update-token": "hardhat deploy --tags CarBarContract:update-token",
     "deploy:call-event": "hardhat deploy --tags CarBarContract:call-event",
     "deploy:withdraw": "hardhat deploy --tags CarBarContract:withdraw",
+    "deploy:set-super": "hardhat deploy --tags CarBarContract:set-super",
+    "deploy:unset-super": "hardhat deploy --tags CarBarContract:unset-super",
+    "deploy:smoke-test": "hardhat deploy --tags CarBarContract:smoke-test",
     "deploy:generate-metadata": "hardhat deploy --tags misc:generate-metadata",
     "lint": "yarn lint:sol && yarn lint:ts && yarn prettier:check",
     "lint:sol": "solhint --config ./.solhint.json --max-warnings 0 \"contracts/**/*.sol\"",
@@ -30,6 +34,7 @@
     "format": "prettier --config ./.prettierrc.yml --write \"**/*.{js,json,md,sol,ts,yml}\"",
     "format:check": "prettier --check --config ./.prettierrc.yml \"**/*.{js,json,md,sol,ts,yml}\"",
     "test": "hardhat test --network hardhat",
+    "unit-test": "mocha -r ts-node/register 'utils/**/*spec.ts'",
     "typechain": "cross-env TS_NODE_TRANSPILE_ONLY=true hardhat typechain"
   },
   "devDependencies": {
@@ -53,6 +58,7 @@
     "@typechain/hardhat": "^6.1.4",
     "@types/chai": "^4.3.4",
     "@types/fs-extra": "^9.0.13",
+    "@types/lodash": "^4.14.191",
     "@types/mocha": "^10.0.1",
     "@types/node": "^18.11.10",
     "@typescript-eslint/eslint-plugin": "^5.45.0",

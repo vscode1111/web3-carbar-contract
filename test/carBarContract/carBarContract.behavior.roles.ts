@@ -3,8 +3,8 @@ import { SignerWithAddress } from "@nomiclabs/hardhat-ethers/signers";
 import { getImplementationAddress } from "@openzeppelin/upgrades-core";
 import { expect } from "chai";
 import { ethers, upgrades } from "hardhat";
-import { Context } from "mocha";
 import { Roles, Sold, errorMessage, testValue } from "test/testData";
+import { ContextBase } from "test/types";
 import {
   getCollectionName,
   getNow,
@@ -72,14 +72,14 @@ async function updateCollection(carBarContract: CarBarContract) {
   expect(updatedCollection.expiryDate).to.eq(oldCollection.expiryDate);
 }
 
-async function userBuyToken(that: Context) {
+async function userBuyToken(that: ContextBase) {
   await that.user1CarBarContract.buyToken(testValue.collectionId0);
   expect(
     await that.user1CarBarContract.balanceOf(that.user1.address, testValue.collectionId0),
   ).to.equal(2);
 }
 
-async function userSafeTransferFrom(that: Context) {
+async function userSafeTransferFrom(that: ContextBase) {
   await that.user1CarBarContract.safeTransferFrom(
     that.user1.address,
     that.user2.address,
@@ -130,13 +130,13 @@ export function shouldBehaveCorrectRoles(): void {
     });
 
     it("check initial roles", async function () {
-      expect(await this.ownerCarBarContract.superOwner()).to.eq(this.owner.address);
+      expect(await this.ownerCarBarContract.superOwner()).to.eq(this.superOwner.address);
       expect(await this.ownerCarBarContract.owner()).to.eq(this.owner.address);
 
       //superOwner
       expect(
         await this.ownerCarBarContract.hasRole(Roles.SUPER_OWNER_ROLE, this.superOwner.address),
-      ).to.eq(false);
+      ).to.eq(true);
       expect(
         await this.ownerCarBarContract.hasRole(Roles.OWNER_ROLE, this.superOwner.address),
       ).to.eq(false);
@@ -144,11 +144,11 @@ export function shouldBehaveCorrectRoles(): void {
       //owner
       expect(
         await this.ownerCarBarContract.hasRole(Roles.SUPER_OWNER_ROLE, this.owner.address),
-      ).to.eq(true);
+      ).to.eq(false);
       expect(await this.ownerCarBarContract.hasRole(Roles.OWNER_ROLE, this.owner.address)).to.eq(
-        false,
+        true,
       );
-      expect(await this.ownerCarBarContract.hasOwnerUpgradePermission()).to.eq(true);
+      expect(await this.ownerCarBarContract.hasOwnerSuperOwnerPermission()).to.eq(true);
 
       //user1
       expect(
@@ -162,19 +162,23 @@ export function shouldBehaveCorrectRoles(): void {
         testValue.price0,
       );
 
-      expect(await getTotalBalance(this.ownerCarBarContract, this.superOwner.address)).to.eq(0);
-      expect(await getTotalTokens(this.ownerCarBarContract, this.superOwner.address)).to.eq(0);
-      expect(await getTotalBalance(this.ownerCarBarContract, this.owner.address)).to.eq(8);
-      expect(await getTotalTokens(this.ownerCarBarContract, this.owner.address)).to.eq(8);
+      expect(await getTotalBalance(this.ownerCarBarContract, this.superOwner.address)).to.eq(8);
+      expect(await getTotalTokens(this.ownerCarBarContract, this.superOwner.address)).to.eq(8);
+      expect(await getTotalBalance(this.ownerCarBarContract, this.owner.address)).to.eq(0);
+      expect(await getTotalTokens(this.ownerCarBarContract, this.owner.address)).to.eq(0);
       expect(await getTotalBalance(this.ownerCarBarContract, this.user1.address)).to.eq(1);
       expect(await getTotalTokens(this.ownerCarBarContract, this.user1.address)).to.eq(1);
     });
 
-    it("owner should upgrade contract", async function () {
+    it("superOwner is allowed to upgrade contract", async function () {
+      await upgradeContract(this.ownerCarBarContract.address, this.superOwner);
+    });
+
+    it("owner is allowed to upgrade contract", async function () {
       await upgradeContract(this.ownerCarBarContract.address, this.owner);
     });
 
-    it("should throw error when user1 tries to upgrade contract", async function () {
+    it("user isn't allowed to upgrade contract", async function () {
       const carBarContractFactory = <CarBarContract__factory>(
         await ethers.getContractFactory("CarBarContractNew", this.user1)
       );
@@ -184,19 +188,9 @@ export function shouldBehaveCorrectRoles(): void {
       ).to.be.rejectedWith(vmEsceptionText(errorMessage.onlySuperOwnerOrPermittedOwner));
     });
 
-    it("should throw error when user tries to upgrade contract", async function () {
-      const carBarContractFactory = <CarBarContract__factory>(
-        await ethers.getContractFactory("CarBarContractNew", this.superOwner)
-      );
-
-      await expect(
-        upgrades.upgradeProxy(this.ownerCarBarContract.address, carBarContractFactory),
-      ).to.be.rejectedWith(vmEsceptionText(errorMessage.onlySuperOwnerOrPermittedOwner));
-    });
-
-    describe("after setting superOwner", () => {
+    describe("After the superOwner permission is returned from owner", () => {
       beforeEach(async function () {
-        this.ownerCarBarContract.setSuperOwner(this.superOwner.address);
+        this.ownerCarBarContract.giveSuperOwnerPermissionToOwner(0);
       });
 
       it("initial check", async function () {
@@ -206,7 +200,7 @@ export function shouldBehaveCorrectRoles(): void {
         expect(
           await this.ownerCarBarContract.hasRole(Roles.SUPER_OWNER_ROLE, this.owner.address),
         ).to.eq(false);
-        expect(await this.ownerCarBarContract.hasOwnerUpgradePermission()).to.eq(false);
+        expect(await this.ownerCarBarContract.hasOwnerSuperOwnerPermission()).to.eq(false);
         expect(await this.ownerTestUSDT.balanceOf(this.user1.address)).to.equal(
           testValue.userInitialBalance0.sub(testValue.price0),
         );
@@ -236,7 +230,7 @@ export function shouldBehaveCorrectRoles(): void {
       it("owner isn't allowed to withdraw USDT", async function () {
         await expect(
           withdraw(this.ownerCarBarContract, this.ownerTestUSDT, this.user1),
-        ).to.be.rejectedWith(vmEsceptionText(errorMessage.onlySuperOwner));
+        ).to.be.rejectedWith(vmEsceptionText(errorMessage.onlySuperOwnerOrPermittedOwner));
       });
 
       it("owner is allowed update certain collection", async function () {
@@ -257,11 +251,11 @@ export function shouldBehaveCorrectRoles(): void {
 
       describe("superOwner gave upgrade permission to owner", () => {
         beforeEach(async function () {
-          await this.superOwnerCarBarContract.giveUpgradePermissionToOwner(1);
+          await this.superOwnerCarBarContract.giveSuperOwnerPermissionToOwner(1);
         });
 
         it("initial check", async function () {
-          expect(await this.superOwnerCarBarContract.upgradePermissionTimeLimit()).closeTo(
+          expect(await this.superOwnerCarBarContract.superOwnerPermissionTimeLimit()).closeTo(
             getNow() + 3600,
             testValue.timeDelta,
           );

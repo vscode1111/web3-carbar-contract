@@ -1,5 +1,6 @@
 import { expect } from "chai";
 import { TokenSoldEvent } from "typechain-types/contracts/CarBarContract";
+import { waitForTx } from "utils/common";
 
 import { Sold, errorMessage, testValue } from "../testData";
 import {
@@ -12,7 +13,7 @@ import {
 export function shouldBehaveCorrectPayment(): void {
   describe("payment", () => {
     it("should return 0 balances for owner and all users", async function () {
-      const ownerBalance = await this.ownerTestUSDT.balanceOf(this.owner.address);
+      const ownerBalance = await this.ownerTestUSDT.balanceOf(this.superOwner.address);
       expect(ownerBalance).to.equal(testValue.zero);
 
       const user1Balance = await this.ownerTestUSDT.balanceOf(this.user1.address);
@@ -23,14 +24,14 @@ export function shouldBehaveCorrectPayment(): void {
     });
 
     it("should return correct balances for owner and all users after minting", async function () {
-      await this.ownerTestUSDT.mint(this.owner.address, testValue.userInitialBalance0);
+      await this.ownerTestUSDT.mint(this.superOwner.address, testValue.userInitialBalance0);
       await this.ownerTestUSDT.mint(this.user1.address, testValue.userInitialBalance1);
       await this.ownerTestUSDT.mint(this.user2.address, testValue.userInitialBalance2);
 
       expect(await this.ownerTestUSDT.balanceOf(this.ownerCarBarContract.address)).to.equal(
         testValue.zero,
       );
-      expect(await this.ownerTestUSDT.balanceOf(this.owner.address)).to.equal(
+      expect(await this.ownerTestUSDT.balanceOf(this.superOwner.address)).to.equal(
         testValue.userInitialBalance0,
       );
       expect(await this.ownerTestUSDT.balanceOf(this.user1.address)).to.equal(
@@ -48,8 +49,7 @@ export function shouldBehaveCorrectPayment(): void {
 
       await this.user1TestUSDT.approve(this.ownerCarBarContract.address, testValue.price0);
 
-      const tx = await this.user1CarBarContract.buyToken(testValue.collectionId0);
-      const receipt = await tx.wait();
+      const receipt = await waitForTx(this.user1CarBarContract.buyToken(testValue.collectionId0));
 
       const tokenSoldEvent = receipt.events?.find(
         (item) => item.event === "TokenSold",
@@ -61,7 +61,7 @@ export function shouldBehaveCorrectPayment(): void {
 
       expect(collectionId).to.be.equal(testValue.collectionId0);
       expect(tokenId).to.be.equal(0);
-      expect(seller).to.be.equal(this.owner.address);
+      expect(seller).to.be.equal(this.superOwner.address);
       expect(owner).to.be.equal(this.user1.address);
       expect(price).to.be.equal(testValue.price0);
       expect(timestamp).to.be.closeTo(getNow(), testValue.timeDelta);
@@ -95,10 +95,10 @@ export function shouldBehaveCorrectPayment(): void {
       expect(tokens[0].owner).to.equal(this.user1.address);
       expect(tokens[0].sold).to.equal(Sold.TokenSold);
       expect(tokens[0].expiryDate).to.equal(timeGap - 1);
-      expect(tokens[1].owner).to.equal(this.owner.address);
+      expect(tokens[1].owner).to.equal(this.superOwner.address);
       expect(tokens[1].sold).to.equal(Sold.None);
       expect(tokens[1].expiryDate).to.equal(0);
-      expect(tokens[2].owner).to.equal(this.owner.address);
+      expect(tokens[2].owner).to.equal(this.superOwner.address);
       expect(tokens[2].sold).to.equal(Sold.None);
       expect(tokens[2].expiryDate).to.equal(0);
     });
@@ -122,7 +122,7 @@ export function shouldBehaveCorrectPayment(): void {
 
       expect(collectionId).to.be.equal(testValue.collectionId1);
       expect(tokenId).to.be.equal(0);
-      expect(seller).to.be.equal(this.owner.address);
+      expect(seller).to.be.equal(this.superOwner.address);
       expect(owner).to.be.equal(this.user1.address);
       expect(price).to.be.equal(testValue.price1);
       expect(timestamp).to.be.closeTo(getNow(), testValue.timeDelta);
@@ -206,7 +206,7 @@ export function shouldBehaveCorrectPayment(): void {
 
       await expect(
         this.user1CarBarContract.withdraw(this.user2.address, testValue.price1),
-      ).to.be.rejectedWith(vmEsceptionText(errorMessage.onlySuperOwner));
+      ).to.be.rejectedWith(vmEsceptionText(errorMessage.onlySuperOwnerOrPermittedOwner));
 
       expect(await this.ownerTestUSDT.balanceOf(this.ownerCarBarContract.address)).to.equal(
         testValue.userInitialBalance0,
@@ -240,7 +240,7 @@ export function shouldBehaveCorrectPayment(): void {
 
       await expect(
         this.user1CarBarContract.withdraw(this.user2.address, testValue.price0),
-      ).to.be.rejectedWith(vmEsceptionText(errorMessage.onlySuperOwner));
+      ).to.be.rejectedWith(vmEsceptionText(errorMessage.onlySuperOwnerOrPermittedOwner));
 
       expect(await this.ownerTestUSDT.balanceOf(this.ownerCarBarContract.address)).to.equal(
         testValue.userInitialBalance0,
@@ -257,28 +257,28 @@ export function shouldBehaveCorrectPayment(): void {
       await initCollectionsReal(this.ownerCarBarContract, testValue.tokenCount);
 
       expect(
-        await this.ownerCarBarContract.balanceOf(this.owner.address, testValue.collectionId0),
+        await this.ownerCarBarContract.balanceOf(this.superOwner.address, testValue.collectionId0),
       ).to.equal(testValue.tokenCount);
 
       //Check initial state of collection #0
       let tokens = await this.ownerCarBarContract.fetchTokens(testValue.collectionId0);
-      expect(tokens[0].owner).to.equal(this.owner.address);
+      expect(tokens[0].owner).to.equal(this.superOwner.address);
       expect(tokens[0].sold).to.equal(Sold.None);
-      expect(tokens[1].owner).to.equal(this.owner.address);
+      expect(tokens[1].owner).to.equal(this.superOwner.address);
       expect(tokens[1].sold).to.equal(Sold.None);
-      expect(tokens[2].owner).to.equal(this.owner.address);
+      expect(tokens[2].owner).to.equal(this.superOwner.address);
       expect(tokens[2].sold).to.equal(Sold.None);
       //Check initial state of collection #1
       tokens = await this.ownerCarBarContract.fetchTokens(testValue.collectionId1);
-      expect(tokens[0].owner).to.equal(this.owner.address);
+      expect(tokens[0].owner).to.equal(this.superOwner.address);
       expect(tokens[0].sold).to.equal(Sold.None);
-      expect(tokens[1].owner).to.equal(this.owner.address);
+      expect(tokens[1].owner).to.equal(this.superOwner.address);
       expect(tokens[1].sold).to.equal(Sold.None);
-      expect(tokens[2].owner).to.equal(this.owner.address);
+      expect(tokens[2].owner).to.equal(this.superOwner.address);
       expect(tokens[2].sold).to.equal(Sold.None);
 
       let freeIds = await this.ownerCarBarContract.fetchFreeIds(
-        this.owner.address,
+        this.superOwner.address,
         testValue.collectionId0,
       );
       expect(freeIds.length).to.equal(testValue.tokenCount);
@@ -289,7 +289,7 @@ export function shouldBehaveCorrectPayment(): void {
       //User1 buys token of collection #0
       await this.user1CarBarContract.buyToken(testValue.collectionId0);
       freeIds = await this.ownerCarBarContract.fetchFreeIds(
-        this.owner.address,
+        this.superOwner.address,
         testValue.collectionId0,
       );
       expect(freeIds.length).to.equal(testValue.tokenCount - 1);
@@ -306,12 +306,12 @@ export function shouldBehaveCorrectPayment(): void {
       tokens = await this.ownerCarBarContract.fetchTokens(testValue.collectionId0);
       expect(tokens[0].owner).to.equal(this.user1.address);
       expect(tokens[0].sold).to.equal(Sold.TokenSold);
-      expect(tokens[1].owner).to.equal(this.owner.address);
+      expect(tokens[1].owner).to.equal(this.superOwner.address);
       expect(tokens[1].sold).to.equal(Sold.None);
-      expect(tokens[2].owner).to.equal(this.owner.address);
+      expect(tokens[2].owner).to.equal(this.superOwner.address);
       expect(tokens[2].sold).to.equal(Sold.None);
       expect(
-        await this.ownerCarBarContract.balanceOf(this.owner.address, testValue.collectionId0),
+        await this.ownerCarBarContract.balanceOf(this.superOwner.address, testValue.collectionId0),
       ).to.equal(testValue.tokenCount - 1);
       expect(
         await this.ownerCarBarContract.balanceOf(this.user1.address, testValue.collectionId0),
@@ -323,7 +323,7 @@ export function shouldBehaveCorrectPayment(): void {
       //User2 buys token of collection #0
       await this.user2CarBarContract.buyToken(testValue.collectionId0);
       freeIds = await this.ownerCarBarContract.fetchFreeIds(
-        this.owner.address,
+        this.superOwner.address,
         testValue.collectionId0,
       );
       expect(freeIds.length).to.equal(testValue.tokenCount - 2);
@@ -341,10 +341,10 @@ export function shouldBehaveCorrectPayment(): void {
       expect(tokens[0].sold).to.equal(Sold.TokenSold);
       expect(tokens[1].owner).to.equal(this.user2.address);
       expect(tokens[1].sold).to.equal(Sold.TokenSold);
-      expect(tokens[2].owner).to.equal(this.owner.address);
+      expect(tokens[2].owner).to.equal(this.superOwner.address);
       expect(tokens[2].sold).to.equal(Sold.None);
       expect(
-        await this.ownerCarBarContract.balanceOf(this.owner.address, testValue.collectionId0),
+        await this.ownerCarBarContract.balanceOf(this.superOwner.address, testValue.collectionId0),
       ).to.equal(testValue.tokenCount - 2);
       expect(
         await this.ownerCarBarContract.balanceOf(this.user1.address, testValue.collectionId0),
@@ -355,11 +355,11 @@ export function shouldBehaveCorrectPayment(): void {
 
       //Check initial state of collection #1
       tokens = await this.ownerCarBarContract.fetchTokens(testValue.collectionId1);
-      expect(tokens[0].owner).to.equal(this.owner.address);
+      expect(tokens[0].owner).to.equal(this.superOwner.address);
       expect(tokens[0].sold).to.equal(Sold.None);
-      expect(tokens[1].owner).to.equal(this.owner.address);
+      expect(tokens[1].owner).to.equal(this.superOwner.address);
       expect(tokens[1].sold).to.equal(Sold.None);
-      expect(tokens[2].owner).to.equal(this.owner.address);
+      expect(tokens[2].owner).to.equal(this.superOwner.address);
       expect(tokens[2].sold).to.equal(Sold.None);
 
       //User1 buys token of collection #1
@@ -367,12 +367,12 @@ export function shouldBehaveCorrectPayment(): void {
       tokens = await this.ownerCarBarContract.fetchTokens(testValue.collectionId1);
       expect(tokens[0].owner).to.equal(this.user1.address);
       expect(tokens[0].sold).to.equal(Sold.TokenSold);
-      expect(tokens[1].owner).to.equal(this.owner.address);
+      expect(tokens[1].owner).to.equal(this.superOwner.address);
       expect(tokens[1].sold).to.equal(Sold.None);
-      expect(tokens[2].owner).to.equal(this.owner.address);
+      expect(tokens[2].owner).to.equal(this.superOwner.address);
       expect(tokens[2].sold).to.equal(Sold.None);
       expect(
-        await this.ownerCarBarContract.balanceOf(this.owner.address, testValue.collectionId1),
+        await this.ownerCarBarContract.balanceOf(this.superOwner.address, testValue.collectionId1),
       ).to.equal(testValue.tokenCount - 1);
       expect(
         await this.ownerCarBarContract.balanceOf(this.user1.address, testValue.collectionId1),
@@ -388,10 +388,10 @@ export function shouldBehaveCorrectPayment(): void {
       expect(tokens[0].sold).to.equal(Sold.TokenSold);
       expect(tokens[1].owner).to.equal(this.user2.address);
       expect(tokens[1].sold).to.equal(Sold.TokenSold);
-      expect(tokens[2].owner).to.equal(this.owner.address);
+      expect(tokens[2].owner).to.equal(this.superOwner.address);
       expect(tokens[2].sold).to.equal(Sold.None);
       expect(
-        await this.ownerCarBarContract.balanceOf(this.owner.address, testValue.collectionId1),
+        await this.ownerCarBarContract.balanceOf(this.superOwner.address, testValue.collectionId1),
       ).to.equal(testValue.tokenCount - 2);
       expect(
         await this.ownerCarBarContract.balanceOf(this.user1.address, testValue.collectionId1),

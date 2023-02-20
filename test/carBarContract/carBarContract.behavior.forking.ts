@@ -1,4 +1,4 @@
-import { CONTRACTS, TOKENS } from "constants/addresses";
+import { CAR_BAR_CONTRACT_NAME, CONTRACTS, TOKENS, USDT_CONTRACT_NAME } from "constants/addresses";
 import { ethers, upgrades } from "hardhat";
 import { CarBarContract } from "typechain-types/contracts/CarBarContract";
 import { TestUSDT } from "typechain-types/contracts/TestUSDT";
@@ -23,11 +23,13 @@ export function shouldBehaveCorrectForking(): void {
         "0x90Aa0e69acF6ebeD3a124625DD14A19aE8AA81b1",
       );
       const user = await ethers.getImpersonatedSigner("0x2Dd61D433319B0D0A446592376fC3613E70d686A");
-      const testUSDTFactory = <TestUSDT__factory>await ethers.getContractFactory("TestUSDT");
+      const testUSDTFactory = <TestUSDT__factory>(
+        await ethers.getContractFactory(USDT_CONTRACT_NAME)
+      );
       const userTestUSDT = <TestUSDT>await testUSDTFactory.connect(user).attach(usdtAddress);
 
       const carBarContractFactory = <CarBarContract__factory>(
-        await ethers.getContractFactory("CarBarContract")
+        await ethers.getContractFactory(CAR_BAR_CONTRACT_NAME)
       );
       const ownerCarBarContractFactory = carBarContractFactory.connect(owner);
 

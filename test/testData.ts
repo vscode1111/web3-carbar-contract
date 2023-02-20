@@ -68,7 +68,6 @@ export function getTestCollections(
 }
 
 export const errorMessage = {
-  onlySuperOwner: "Only superOwner has right to call this function",
   onlySuperOwnerOrOwner: "Only superOwner or owner has right to call this function",
   onlySuperOwnerOrPermittedOwner:
     "Only superOwner or owner who has permission can call this function",

@@ -14,7 +14,7 @@ export function shouldBehaveCorrectFetching(): void {
     });
 
     it("should return the correct collections and tokens", async function () {
-      const ownerAddress = this.owner.address;
+      const superOwnerAddress = this.superOwner.address;
 
       const resultTokenCount = await this.ownerCarBarContract.getCollectionCount();
       expect(resultTokenCount).to.equal(0);
@@ -29,7 +29,7 @@ export function shouldBehaveCorrectFetching(): void {
         const collection = collections[i];
 
         const balance = await this.ownerCarBarContract.balanceOf(
-          ownerAddress,
+          superOwnerAddress,
           collection.collectionId,
         );
         expect(balance).to.eq(collection.tokenCount);
@@ -46,10 +46,10 @@ export function shouldBehaveCorrectFetching(): void {
 
         for (let j = 0; j < tokenCount; j++) {
           const token = tokens[i];
-          checkToken(token, i, ownerAddress);
+          checkToken(token, i, superOwnerAddress);
 
           const fetchToken = await this.ownerCarBarContract.fetchToken(collection.collectionId, i);
-          checkToken(fetchToken, i, ownerAddress);
+          checkToken(fetchToken, i, superOwnerAddress);
         }
       }
     });
@@ -102,7 +102,7 @@ export function shouldBehaveCorrectFetching(): void {
       await initCollectionsReal(this.ownerCarBarContract, testValue.tokenCount);
 
       expect(
-        await this.ownerCarBarContract.balanceOf(this.owner.address, testValue.collectionId0),
+        await this.ownerCarBarContract.balanceOf(this.superOwner.address, testValue.collectionId0),
       ).to.equal(testValue.tokenCount);
 
       await this.ownerCarBarContract.updateToken(
@@ -112,7 +112,7 @@ export function shouldBehaveCorrectFetching(): void {
       );
 
       expect(
-        await this.ownerCarBarContract.balanceOf(this.owner.address, testValue.collectionId0),
+        await this.ownerCarBarContract.balanceOf(this.superOwner.address, testValue.collectionId0),
       ).to.equal(testValue.tokenCount - 1);
 
       await this.ownerCarBarContract.updateToken(
@@ -122,7 +122,7 @@ export function shouldBehaveCorrectFetching(): void {
       );
 
       expect(
-        await this.ownerCarBarContract.balanceOf(this.owner.address, testValue.collectionId0),
+        await this.ownerCarBarContract.balanceOf(this.superOwner.address, testValue.collectionId0),
       ).to.equal(testValue.tokenCount - 2);
     });
 
@@ -131,7 +131,7 @@ export function shouldBehaveCorrectFetching(): void {
 
       expect(
         await this.ownerCarBarContract.balanceOfBatch(
-          [this.owner.address],
+          [this.superOwner.address],
           [testValue.collectionId0],
         ),
       ).to.deep.equal([testValue.tokenCount]);
@@ -144,7 +144,7 @@ export function shouldBehaveCorrectFetching(): void {
 
       expect(
         await this.ownerCarBarContract.balanceOfBatch(
-          [this.owner.address],
+          [this.superOwner.address],
           [testValue.collectionId0],
         ),
       ).to.deep.equal([testValue.tokenCount - 1]);
@@ -157,7 +157,7 @@ export function shouldBehaveCorrectFetching(): void {
 
       expect(
         await this.ownerCarBarContract.balanceOfBatch(
-          [this.owner.address],
+          [this.superOwner.address],
           [testValue.collectionId0],
         ),
       ).to.deep.equal([testValue.tokenCount - 2]);

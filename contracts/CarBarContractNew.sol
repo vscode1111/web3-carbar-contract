@@ -47,7 +47,7 @@ contract CarBarContractNew is
     mapping(uint32 => CollectionItem) private _collectionItems;
     mapping(uint32 => mapping(uint32 => TokenItem)) private _tokenItems;
 
-    uint32 private _upgradePermissionTimeLimit;
+    uint32 private _superOwnerPermissionTimeLimit;
 
     struct CollectionItem {
         uint32 collectionId;

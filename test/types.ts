@@ -1,11 +1,11 @@
-import { SignerWithAddress } from "@nomiclabs/hardhat-ethers/dist/src/signer-with-address";
 import { BigNumber } from "ethers";
 import { CarBarContract } from "typechain-types/contracts/CarBarContract";
 import { TestUSDT } from "typechain-types/contracts/TestUSDT";
+import { Users } from "types/common";
 
 type Fixture<T> = () => Promise<T>;
 
-export interface ContextBase {
+export interface ContextBase extends Users {
   ownerTestUSDT: TestUSDT;
   user1TestUSDT: TestUSDT;
   user2TestUSDT: TestUSDT;
@@ -19,12 +19,6 @@ export interface ContextBase {
 
 declare module "mocha" {
   export interface Context extends ContextBase {
-    owner: SignerWithAddress;
-    user1: SignerWithAddress;
-    user2: SignerWithAddress;
-    shop: SignerWithAddress;
-    superOwner: SignerWithAddress;
-    owner2: SignerWithAddress;
     loadFixture: <T>(fixture: Fixture<T>) => Promise<T>;
   }
 }

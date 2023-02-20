@@ -1,19 +1,19 @@
-import { ethers } from "hardhat";
+import { USDT_CONTRACT_NAME } from "constants/addresses";
 import { DeployFunction } from "hardhat-deploy/types";
-import { TestUSDT } from "typechain-types/contracts/TestUSDT";
-import { TestUSDT__factory } from "typechain-types/factories/contracts/TestUSDT__factory";
-import { callWithTimer } from "utils/common";
+import { callWithTimer, verifyContract } from "utils/common";
+import { getUsdtContext, getUsers } from "utils/context";
 
-const func: DeployFunction = async (): Promise<void> => {
+const func: DeployFunction = async (hre): Promise<void> => {
   await callWithTimer(async () => {
     console.log("TestUSDT is deploying...");
-    const [deployer] = await ethers.getSigners();
-    const testUSDTFactory = <TestUSDT__factory>await ethers.getContractFactory("TestUSDT");
-    const testUSDT = <TestUSDT>await testUSDTFactory.connect(deployer).deploy();
-    await testUSDT.deployed();
-  });
+    const { ownerTestUSDT } = await getUsdtContext(await getUsers());
+    await ownerTestUSDT.deployed();
+    console.log(`${USDT_CONTRACT_NAME} deployed to ${ownerTestUSDT.address}`);
+    await verifyContract(ownerTestUSDT.address, hre);
+    console.log(`${USDT_CONTRACT_NAME} deployed and verified to ${ownerTestUSDT.address}`);
+  }, hre);
 };
 
-func.tags = ["TestUSDT"];
+func.tags = [USDT_CONTRACT_NAME];
 
 export default func;

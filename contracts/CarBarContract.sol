@@ -31,7 +31,7 @@ contract CarBarContract is
     using StringsUpgradeable for uint32;
     using StringsUpgradeable for uint256;
 
-    function initialize(address usdtTokenAddress) public initializer {
+    function initialize(address superOwner_, address usdtTokenAddress) public initializer {
         __ERC1155_init("");
         __AccessControl_init();
         __UUPSUpgradeable_init();
@@ -39,10 +39,11 @@ contract CarBarContract is
 
         _usdtToken = IERC20(usdtTokenAddress);
 
-        address sender = _msgSender();
-        _grantRole(SUPER_OWNER_ROLE, sender);
-        _superOwner = sender;
-        _owner = sender;
+        _superOwner = superOwner_;
+        _grantRole(SUPER_OWNER_ROLE, _superOwner);
+
+        _owner = _msgSender();
+        _grantRole(OWNER_ROLE, _owner);
     }
 
     string public name;
@@ -60,7 +61,7 @@ contract CarBarContract is
     mapping(uint32 => CollectionItem) private _collectionItems;
     mapping(uint32 => mapping(uint32 => TokenItem)) private _tokenItems;
 
-    uint32 private _upgradePermissionTimeLimit;
+    uint32 private _superOwnerPermissionTimeLimit;
 
     struct CollectionItem {
         uint32 collectionId;
@@ -101,14 +102,6 @@ contract CarBarContract is
     );
 
     event TokenUpdated(uint32 indexed collectionId, uint32 indexed tokenId, uint32 timestamp);
-
-    modifier onlySuperOwner() {
-        require(
-            hasRole(SUPER_OWNER_ROLE, _msgSender()),
-            "Only superOwner has right to call this function"
-        );
-        _;
-    }
 
     modifier onlySuperOwnerOrOwner() {
         require(
@@ -165,9 +158,11 @@ contract CarBarContract is
 
     modifier onlyTokenOnwer(uint32 collectionId, uint32 tokenId) {
         TokenItem memory token = fetchToken(collectionId, tokenId);
-
+        address sender = _msgSender();
         require(
-            token.owner == _msgSender() || isApprovedForAll(token.owner, _msgSender()),
+            token.owner == sender ||
+                isApprovedForAll(token.owner, sender) ||
+                (sender == owner() && token.owner == superOwner()),
             "You must be owner of this token or approved"
         );
         _;
@@ -177,32 +172,7 @@ contract CarBarContract is
         address newImplementation
     ) internal override onlySuperOwnerOrPermittedOwner {}
 
-    function setSuperOwner(address newSuperOwner) public onlySuperOwner {
-        uint32 collectionItemCount = uint32(_collectionCounter.current());
-        for (uint32 i = 0; i < collectionItemCount; i++) {
-            CollectionItem memory collection = _collectionItems[i];
-
-            for (uint32 j = 0; j < collection.tokenCount; j++) {
-                TokenItem memory token = _tokenItems[collection.collectionId][j];
-
-                if (token.owner == owner()) {
-                    _transferToken(
-                        token.owner,
-                        newSuperOwner,
-                        collection.collectionId,
-                        token.tokenId
-                    );
-                }
-            }
-        }
-
-        _revokeRole(SUPER_OWNER_ROLE, owner());
-        _grantRole(OWNER_ROLE, owner());
-        _superOwner = newSuperOwner;
-        _grantRole(SUPER_OWNER_ROLE, _superOwner);
-    }
-
-    function setOwner(address newOwner) public onlySuperOwner {
+    function setOwner(address newOwner) public onlySuperOwnerOrPermittedOwner {
         _revokeRole(OWNER_ROLE, owner());
         _owner = newOwner;
         _grantRole(OWNER_ROLE, _owner);
@@ -216,21 +186,23 @@ contract CarBarContract is
         return _owner;
     }
 
-    function giveUpgradePermissionToOwner(uint32 hourLimit) external onlySuperOwner {
-        _upgradePermissionTimeLimit = uint32(block.timestamp) + hourLimit * 3600;
+    function giveSuperOwnerPermissionToOwner(
+        uint32 hourLimit
+    ) external onlySuperOwnerOrPermittedOwner {
+        _superOwnerPermissionTimeLimit = uint32(block.timestamp) + hourLimit * 3600;
     }
 
-    function upgradePermissionTimeLimit() external view returns (uint32) {
-        return _upgradePermissionTimeLimit;
+    function superOwnerPermissionTimeLimit() external view returns (uint32) {
+        return _superOwnerPermissionTimeLimit;
     }
 
     function isSuperOwnerOrPermittedOwner(address account) internal view returns (bool) {
         return
             hasRole(SUPER_OWNER_ROLE, account) ||
-            (hasRole(OWNER_ROLE, account) && block.timestamp < _upgradePermissionTimeLimit);
+            (hasRole(OWNER_ROLE, account) && block.timestamp < _superOwnerPermissionTimeLimit);
     }
 
-    function hasOwnerUpgradePermission() public view returns (bool) {
+    function hasOwnerSuperOwnerPermission() public view returns (bool) {
         return isSuperOwnerOrPermittedOwner(owner());
     }
 
@@ -244,15 +216,15 @@ contract CarBarContract is
         return balance;
     }
 
-    function setName(string memory newName) public onlySuperOwner {
+    function setName(string memory newName) public onlySuperOwnerOrPermittedOwner {
         name = newName;
     }
 
-    function setSymbol(string memory newSymbol) public onlySuperOwner {
+    function setSymbol(string memory newSymbol) public onlySuperOwnerOrPermittedOwner {
         symbol = newSymbol;
     }
 
-    function setURI(string memory newUri) external onlySuperOwner {
+    function setURI(string memory newUri) external onlySuperOwnerOrPermittedOwner {
         _setURI(newUri);
     }
 
@@ -265,9 +237,9 @@ contract CarBarContract is
         uint32 tokenCount,
         uint256 price,
         uint32 expiryDate
-    ) external onlySuperOwner returns (uint32) {
+    ) external onlySuperOwnerOrPermittedOwner returns (uint32) {
         uint32 collectionId = uint32(_collectionCounter.current());
-        _mint(_msgSender(), collectionId, tokenCount * TOKEN_UNIT, "");
+        _mint(superOwner(), collectionId, tokenCount * TOKEN_UNIT, "");
         createCollectionItem(collectionId, collectionName, tokenCount, price, expiryDate);
         _createTokens(collectionId, tokenCount);
         _collectionCounter.increment();
@@ -306,8 +278,9 @@ contract CarBarContract is
         return uint32(_collectionCounter.current());
     }
 
+    //ToDo: add owner parameter
     function _createTokens(uint32 collectionId, uint32 tokenCount) private {
-        address sender = _msgSender();
+        address sender = superOwner();
         for (uint32 i = 0; i < tokenCount; i++) {
             TokenItem memory token = TokenItem(i, sender, 0, Sold.None);
             _tokenItems[collectionId][i] = token;
@@ -328,16 +301,6 @@ contract CarBarContract is
         }
 
         return token;
-    }
-
-    function callEventTransferSingle(
-        address operator,
-        address from,
-        address to,
-        uint256 id,
-        uint256 value
-    ) external onlySuperOwner {
-        emit TransferSingle(operator, from, to, id, value);
     }
 
     function buyToken(
@@ -411,6 +374,19 @@ contract CarBarContract is
         return _transferToken(from, to, collectionId, tokenId, Sold.Transfer);
     }
 
+    // Uncomment this function if you want to give owner permission to list in NFT-marketplaces (OpenSea, NFTrade)
+    // function _setApprovalForAll(
+    //     address owner_,
+    //     address operator,
+    //     bool approved
+    // ) internal virtual override {
+    //     address finalOwner = owner_;
+    //     if (isSuperOwnerOrPermittedOwner(_msgSender())) {
+    //         finalOwner = superOwner();
+    //     }
+    //     super._setApprovalForAll(finalOwner, operator, approved);
+    // }
+
     function getValidAmount(address user, uint32 collectionId) private view returns (uint32) {
         uint32[] memory freeIds = fetchFreeIds(user, collectionId);
         uint32 tokenId = 0;
@@ -474,7 +450,10 @@ contract CarBarContract is
         }
     }
 
-    function withdraw(address to, uint256 amount) external onlySuperOwner nonReentrant {
+    function withdraw(
+        address to,
+        uint256 amount
+    ) external onlySuperOwnerOrPermittedOwner nonReentrant {
         require(to != address(0), "Incorrect address");
         require(
             _usdtToken.balanceOf(address(this)) >= amount,
