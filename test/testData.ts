@@ -39,6 +39,8 @@ export const testValue = {
   todayPlus3d1m: toUnixTime(dayjs().add(3, "day").add(1, "minute").toDate()),
   nullAddress: "0x0000000000000000000000000000000000000000",
   timeDelta: 30,
+  attemps: 5,
+  delayMs: 5000,
 };
 
 export function getTestCollections(

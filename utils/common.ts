@@ -54,7 +54,14 @@ export function printSum(balances?: number[]) {
   return _.sum(balances).toFixed(FRACTION_DIGITS);
 }
 
-export async function callWithTimer(
+export async function callWithTimer(fn: () => Promise<void>) {
+  const startTime = new Date();
+  await fn();
+  const finishTime = new Date();
+  return (finishTime.getTime() - startTime.getTime()) / 1000;
+}
+
+export async function callWithTimerHre(
   fn: () => Promise<void>,
   hre?: HardhatRuntimeEnvironment,
   finishMessageFn?: (diff: string) => string,
@@ -77,11 +84,7 @@ export async function callWithTimer(
 
   const startMessage = `->Function was started at ${startTime.toLocaleTimeString()}${extText}`;
   console.log(startMessage);
-  try {
-    await fn();
-  } catch (e) {
-    console.log(e);
-  }
+  await fn();
   const finishTime = new Date();
   const diff = ((finishTime.getTime() - startTime.getTime()) / 1000).toFixed(1);
 
@@ -141,17 +144,53 @@ export async function verifyContract(
   }
 }
 
+export async function attempt(fn: () => Promise<any>, attempts = 3, delayMs = 1000): Promise<any> {
+  try {
+    return await fn();
+  } catch (e) {
+    if (attempts > 0) {
+      console.log(e);
+      await delay(delayMs);
+      console.log(`${attempts - 1} attempts left`);
+      return await attempt(fn, attempts - 1, delayMs);
+    } else {
+      throw e;
+    }
+  }
+}
+
 export async function waitForTx(
   promise: Promise<ContractTransaction>,
   functionName?: string,
+  attempts = 3,
+  delayMs = 1000,
 ): Promise<ContractReceipt> {
-  if (functionName) {
-    console.log(`TX: ${functionName} ...`);
-  }
-  const tx = await promise;
-  if (functionName) {
-    console.log(`TX: ${functionName} hash: ${tx.hash} ...`);
-  }
-  const receipt = await tx.wait();
-  return receipt;
+  return attempt(
+    async () => {
+      let receipt!: ContractReceipt;
+      const time = await callWithTimer(async function () {
+        if (functionName) {
+          console.log(`TX: ${functionName} ...`);
+        }
+        const tx = await promise;
+        if (functionName) {
+          console.log(`TX: ${functionName} hash: ${tx.hash} ...`);
+        }
+        receipt = await tx.wait();
+      });
+
+      if (functionName && receipt) {
+        const gas = receipt.gasUsed;
+        const price = toNumber(gas.mul(receipt.effectiveGasPrice));
+        console.log(
+          `TX: ${functionName} time: ${time.toFixed(1)} sec, gas: ${gas}, fee: ${price.toFixed(
+            FRACTION_DIGITS,
+          )}`,
+        );
+      }
+      return receipt;
+    },
+    attempts,
+    delayMs,
+  );
 }

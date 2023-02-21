@@ -1,7 +1,7 @@
 import appRoot from "app-root-path";
 import fs from "fs";
 import { DeployFunction } from "hardhat-deploy/types";
-import { callWithTimer } from "utils/common";
+import { callWithTimerHre } from "utils/common";
 
 import { deployValue } from "./deployData";
 
@@ -40,7 +40,7 @@ const DICTIONARY: Record<string | number, IMetadata> = {
 };
 
 const func: DeployFunction = async (): Promise<void> => {
-  await callWithTimer(async () => {
+  await callWithTimerHre(async () => {
     const dir = `${appRoot.toString()}/nft/${deployValue.nftPostfix}`;
 
     if (!fs.existsSync(dir)) {

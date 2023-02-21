@@ -10,20 +10,20 @@ export function shouldBehaveCorrectFetching(): void {
       const tokenId = 0;
       await this.ownerCarBarContract.setURI(testText);
       const result = await this.ownerCarBarContract.uri(tokenId);
-      expect(result).to.equal(`${testText}${tokenId}.json`);
+      expect(result).equal(`${testText}${tokenId}.json`);
     });
 
     it("should return the correct collections and tokens", async function () {
       const superOwnerAddress = this.superOwner.address;
 
       const resultTokenCount = await this.ownerCarBarContract.getCollectionCount();
-      expect(resultTokenCount).to.equal(0);
+      expect(resultTokenCount).equal(0);
 
       await initCollections(this.ownerCarBarContract, testValue.collectionCount);
 
       const collections = await this.ownerCarBarContract.fetchCollections();
 
-      expect(collections.length).to.equal(testValue.collectionCount);
+      expect(collections.length).equal(testValue.collectionCount);
 
       for (let i = 0; i < testValue.collectionCount; i++) {
         const collection = collections[i];
@@ -32,17 +32,17 @@ export function shouldBehaveCorrectFetching(): void {
           superOwnerAddress,
           collection.collectionId,
         );
-        expect(balance).to.eq(collection.tokenCount);
+        expect(balance).eq(collection.tokenCount);
 
-        expect(collection.collectionId).to.eq(i);
-        expect(collection.collectionName).to.eq(getCollectionName(i));
-        expect(collection.tokenCount).to.eq(i + 1);
-        expect(collection.price).to.eq(i + 2);
-        expect(collection.expiryDate).to.eq(i + 3);
+        expect(collection.collectionId).eq(i);
+        expect(collection.collectionName).eq(getCollectionName(i));
+        expect(collection.tokenCount).eq(i + 1);
+        expect(collection.price).eq(i + 2);
+        expect(collection.expiryDate).eq(i + 3);
 
         const tokens = await this.ownerCarBarContract.fetchTokens(collection.collectionId);
         const tokenCount = collection.tokenCount;
-        expect(tokens.length).to.eq(tokenCount);
+        expect(tokens.length).eq(tokenCount);
 
         for (let j = 0; j < tokenCount; j++) {
           const token = tokens[i];
@@ -64,11 +64,11 @@ export function shouldBehaveCorrectFetching(): void {
 
       const collection = await this.ownerCarBarContract.fetchCollection(testValue.collectionId0);
 
-      expect(collection.collectionId).to.eq(testValue.collectionId0);
-      expect(collection.collectionName).to.eq(getCollectionName(10));
-      expect(collection.tokenCount).to.eq(testValue.collectionId0 + 1);
-      expect(collection.price).to.eq(testValue.collectionId0 + 2);
-      expect(collection.expiryDate).to.eq(testValue.collectionId0 + 3);
+      expect(collection.collectionId).eq(testValue.collectionId0);
+      expect(collection.collectionName).eq(getCollectionName(10));
+      expect(collection.tokenCount).eq(testValue.collectionId0 + 1);
+      expect(collection.price).eq(testValue.collectionId0 + 2);
+      expect(collection.expiryDate).eq(testValue.collectionId0 + 3);
     });
 
     it("should be correct update certain token", async function () {
@@ -92,10 +92,10 @@ export function shouldBehaveCorrectFetching(): void {
         testValue.tokenId0,
       );
 
-      expect(token.tokenId).to.eq(testValue.tokenId0);
-      expect(token.owner).to.eq(owner);
-      expect(token.expiryDate).to.eq(testValue.today);
-      expect(token.sold).to.eq(sold);
+      expect(token.tokenId).eq(testValue.tokenId0);
+      expect(token.owner).eq(owner);
+      expect(token.expiryDate).eq(testValue.today);
+      expect(token.sold).eq(sold);
     });
 
     it("should be correct balanceOf", async function () {
@@ -103,7 +103,7 @@ export function shouldBehaveCorrectFetching(): void {
 
       expect(
         await this.ownerCarBarContract.balanceOf(this.superOwner.address, testValue.collectionId0),
-      ).to.equal(testValue.tokenCount);
+      ).equal(testValue.tokenCount);
 
       await this.ownerCarBarContract.updateToken(
         testValue.collectionId0,
@@ -113,7 +113,7 @@ export function shouldBehaveCorrectFetching(): void {
 
       expect(
         await this.ownerCarBarContract.balanceOf(this.superOwner.address, testValue.collectionId0),
-      ).to.equal(testValue.tokenCount - 1);
+      ).equal(testValue.tokenCount - 1);
 
       await this.ownerCarBarContract.updateToken(
         testValue.collectionId0,
@@ -123,7 +123,7 @@ export function shouldBehaveCorrectFetching(): void {
 
       expect(
         await this.ownerCarBarContract.balanceOf(this.superOwner.address, testValue.collectionId0),
-      ).to.equal(testValue.tokenCount - 2);
+      ).equal(testValue.tokenCount - 2);
     });
 
     it("should be correct balanceOf", async function () {
@@ -134,7 +134,7 @@ export function shouldBehaveCorrectFetching(): void {
           [this.superOwner.address],
           [testValue.collectionId0],
         ),
-      ).to.deep.equal([testValue.tokenCount]);
+      ).deep.equal([testValue.tokenCount]);
 
       await this.ownerCarBarContract.updateToken(
         testValue.collectionId0,
@@ -147,7 +147,7 @@ export function shouldBehaveCorrectFetching(): void {
           [this.superOwner.address],
           [testValue.collectionId0],
         ),
-      ).to.deep.equal([testValue.tokenCount - 1]);
+      ).deep.equal([testValue.tokenCount - 1]);
 
       await this.ownerCarBarContract.updateToken(
         testValue.collectionId0,
@@ -160,12 +160,12 @@ export function shouldBehaveCorrectFetching(): void {
           [this.superOwner.address],
           [testValue.collectionId0],
         ),
-      ).to.deep.equal([testValue.tokenCount - 2]);
+      ).deep.equal([testValue.tokenCount - 2]);
     });
 
     it("should be correct USDT address", async function () {
       const result = await this.ownerCarBarContract.getUSDTaddress();
-      expect(result).to.eq(this.ownerTestUSDT.address);
+      expect(result).eq(this.ownerTestUSDT.address);
     });
   });
 }

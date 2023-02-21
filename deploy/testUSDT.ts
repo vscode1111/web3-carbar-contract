@@ -1,10 +1,10 @@
 import { USDT_CONTRACT_NAME } from "constants/addresses";
 import { DeployFunction } from "hardhat-deploy/types";
-import { callWithTimer, verifyContract } from "utils/common";
+import { callWithTimerHre, verifyContract } from "utils/common";
 import { getUsdtContext, getUsers } from "utils/context";
 
 const func: DeployFunction = async (hre): Promise<void> => {
-  await callWithTimer(async () => {
+  await callWithTimerHre(async () => {
     console.log("TestUSDT is deploying...");
     const { ownerTestUSDT } = await getUsdtContext(await getUsers());
     await ownerTestUSDT.deployed();

@@ -2,8 +2,8 @@ import { CAR_BAR_CONTRACT_NAME } from "constants/addresses";
 import { DeployFunction } from "hardhat-deploy/types";
 import { HardhatRuntimeEnvironment } from "hardhat/types";
 import { TokenSoldEvent } from "typechain-types/contracts/CarBarContract";
-import { callWithTimer, waitForTx } from "utils/common";
-import { getCarBarContext, getUsdtContext, getUsers } from "utils/context";
+import { callWithTimerHre, waitForTx } from "utils/common";
+import { getContext } from "utils/context";
 
 import { deployValue } from "../deployData";
 import { getAddressesFromHre, getUSDTDecimalsFactor } from "../utils";
@@ -11,15 +11,15 @@ import { getAddressesFromHre, getUSDTDecimalsFactor } from "../utils";
 const BUY_TOKEN = true;
 
 const func: DeployFunction = async (hre: HardhatRuntimeEnvironment): Promise<void> => {
-  await callWithTimer(async () => {
+  await callWithTimerHre(async () => {
     const { carBarAddress, usdtAddress } = await getAddressesFromHre(hre);
 
     console.log(`${CAR_BAR_CONTRACT_NAME} [${carBarAddress}] starts buying...`);
 
-    const users = await getUsers();
-    const { user1 } = users;
-    const { user1TestUSDT } = await getUsdtContext(users, usdtAddress);
-    const { user1CarBarContract } = await getCarBarContext(users, carBarAddress);
+    const { user1, user1TestUSDT, user1CarBarContract } = await getContext(
+      carBarAddress,
+      usdtAddress,
+    );
 
     const collections = await user1CarBarContract.fetchCollections();
     const factor = await getUSDTDecimalsFactor(user1TestUSDT);

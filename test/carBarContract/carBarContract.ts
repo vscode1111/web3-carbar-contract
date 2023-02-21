@@ -5,7 +5,7 @@ import { shouldBehaveCorrectFetching } from "./carBarContract.behavior.fetching"
 import { shouldBehaveCorrectForking } from "./carBarContract.behavior.forking";
 import { shouldBehaveCorrectPayment } from "./carBarContract.behavior.payment";
 import { shouldBehaveCorrectRoles } from "./carBarContract.behavior.roles";
-import { shouldBehaveCorrectSmoke } from "./carBarContract.behavior.smoke-test";
+import { shouldBehaveCorrectSmokeTest } from "./carBarContract.behavior.smoke-test";
 import { shouldBehaveCorrectTransfer } from "./carBarContract.behavior.transfer";
 import { deployCarBarContractFixture } from "./carBarContract.fixture";
 
@@ -56,5 +56,5 @@ describe(CAR_BAR_CONTRACT_NAME, function () {
   shouldBehaveCorrectTransfer();
   shouldBehaveCorrectForking();
   shouldBehaveCorrectRoles();
-  shouldBehaveCorrectSmoke();
+  shouldBehaveCorrectSmokeTest();
 });

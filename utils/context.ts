@@ -6,6 +6,7 @@ import {
   USDT_CONTRACT_NAME,
 } from "constants/addresses";
 import { ethers, upgrades } from "hardhat";
+import { ContextBase } from "test/types";
 import { CarBarContract } from "typechain-types/contracts/CarBarContract";
 import { TestUSDT } from "typechain-types/contracts/TestUSDT";
 import { CarBarContract__factory } from "typechain-types/factories/contracts/CarBarContract__factory";
@@ -107,5 +108,17 @@ export async function getUsdtContext(users: Users, usdtAddress?: string) {
     shopTestUSDT,
     superOwnerTestUSDT,
     owner2TestUSDT,
+  };
+}
+
+export async function getContext(carBarAddress: string, usdtAddress: string): Promise<ContextBase> {
+  const users = await getUsers();
+  const usdtContext = await getUsdtContext(users, usdtAddress);
+  const carBarContext = await getCarBarContext(users, carBarAddress);
+
+  return {
+    ...users,
+    ...usdtContext,
+    ...carBarContext,
   };
 }

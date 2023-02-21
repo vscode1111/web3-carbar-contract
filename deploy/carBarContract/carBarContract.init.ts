@@ -2,7 +2,7 @@ import { CAR_BAR_CONTRACT_NAME } from "constants/addresses";
 import { DeployFunction } from "hardhat-deploy/types";
 import { HardhatRuntimeEnvironment } from "hardhat/types";
 import { getTestCollections } from "test/testData";
-import { callWithTimer, waitForTx } from "utils/common";
+import { callWithTimerHre, waitForTx } from "utils/common";
 import { getCarBarContext, getUsers } from "utils/context";
 
 import { deployValue } from "../deployData";
@@ -12,7 +12,7 @@ const HOST_URL = "https://carbar.online/nft_json";
 const INIT_COLLECTION = true;
 
 const func: DeployFunction = async (hre: HardhatRuntimeEnvironment): Promise<void> => {
-  await callWithTimer(async () => {
+  await callWithTimerHre(async () => {
     const { carBarAddress } = await getAddressesFromHre(hre);
     console.log(`${CAR_BAR_CONTRACT_NAME} ${carBarAddress} is initiating...`);
     const { ownerCarBarContract } = await getCarBarContext(await getUsers(), carBarAddress);
