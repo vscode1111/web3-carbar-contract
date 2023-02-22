@@ -7,7 +7,6 @@ export const deployValue = {
   tokenId: 0,
   today: toUnixTime(),
   nullAddress: "0x0000000000000000000000000000000000000000",
-  nftPostfix: "p1",
 };
 
 export const JSON_DICTIONARY: Record<string | number, IMetadata> = {

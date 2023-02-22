@@ -3,11 +3,11 @@ import fs from "fs";
 import { DeployFunction } from "hardhat-deploy/types";
 import { callWithTimerHre } from "utils/common";
 
-import { JSON_DICTIONARY, deployValue } from "./deployData";
+import { JSON_DICTIONARY } from "./deployData";
 
 const func: DeployFunction = async (): Promise<void> => {
   await callWithTimerHre(async () => {
-    const dir = `${appRoot.toString()}/nft/${deployValue.nftPostfix}`;
+    const dir = `${appRoot.toString()}/nft`;
 
     if (!fs.existsSync(dir)) {
       fs.mkdirSync(dir, {

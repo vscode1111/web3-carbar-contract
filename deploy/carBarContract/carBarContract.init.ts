@@ -5,10 +5,9 @@ import { getTestCollections } from "test/testData";
 import { callWithTimerHre, waitForTx } from "utils/common";
 import { getCarBarContext, getUsers } from "utils/context";
 
-import { deployValue } from "../deployData";
 import { getAddressesFromHre } from "../utils";
 
-const HOST_URL = "https://carbar.online/nft_json";
+const HOST_URL = "https://carbar.io/nft_json/cr1/";
 const INIT_COLLECTION = true;
 
 const func: DeployFunction = async (hre: HardhatRuntimeEnvironment): Promise<void> => {
@@ -19,7 +18,7 @@ const func: DeployFunction = async (hre: HardhatRuntimeEnvironment): Promise<voi
 
     await waitForTx(ownerCarBarContract.setName(`carbar.io v1`), "setName");
     await waitForTx(ownerCarBarContract.setSymbol(`carbar`), "setSymbol");
-    await waitForTx(ownerCarBarContract.setURI(`${HOST_URL}/${deployValue.nftPostfix}/`), "setURI");
+    await waitForTx(ownerCarBarContract.setURI(HOST_URL), "setURI");
 
     if (INIT_COLLECTION) {
       const collections = getTestCollections();
