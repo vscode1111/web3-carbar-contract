@@ -17,14 +17,8 @@ const func: DeployFunction = async (hre: HardhatRuntimeEnvironment): Promise<voi
     console.log(`${CAR_BAR_CONTRACT_NAME} ${carBarAddress} is initiating...`);
     const { ownerCarBarContract } = await getCarBarContext(await getUsers(), carBarAddress);
 
-    await waitForTx(
-      ownerCarBarContract.setName(`carbar_test_${deployValue.nftPostfix}`),
-      "setName",
-    );
-    await waitForTx(
-      ownerCarBarContract.setSymbol(`carbar_test_symbol_${deployValue.nftPostfix}`),
-      "setSymbol",
-    );
+    await waitForTx(ownerCarBarContract.setName(`carbar.io v1`), "setName");
+    await waitForTx(ownerCarBarContract.setSymbol(`carbar`), "setSymbol");
     await waitForTx(ownerCarBarContract.setURI(`${HOST_URL}/${deployValue.nftPostfix}/`), "setURI");
 
     if (INIT_COLLECTION) {

@@ -32,6 +32,6 @@ export const TOKENS: Record<TOKEN_LIST, DeployNetworks> = {
 export const ACCOUNTS: Record<ACCOUNT_LIST, DeployNetworks> = {
   SUPER_OWNER: {
     opera: "0xe54D298953F65c47DbbE48F2a958E337a12392c6",
-    polygon: "0xe54D298953F65c47DbbE48F2a958E337a12392c6",
+    polygon: "0xBE387fa4Bd4a309e26796299CDfc7E245B19A331",
   },
 };

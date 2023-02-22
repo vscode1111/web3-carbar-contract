@@ -1,12 +1,13 @@
 import dayjs from "dayjs";
+import { JSON_DICTIONARY } from "deploy/deployData";
 import { BigNumber } from "ethers";
 
 import { toUnixTime, toWei } from "../utils/common";
 import { ICollectionItem } from "./types";
 
-const PROD_DATA = false;
+const PROD_DATA = true;
 
-export const TOKEN_COUNT = PROD_DATA ? 300 : 60;
+export const TOKEN_COUNT = PROD_DATA ? 101 : 60;
 
 export const TUSDT_DECIMALS = 6;
 
@@ -30,7 +31,7 @@ export const testValue = {
   userInitialBalance2: toWei(3000, TUSDT_DECIMALS).div(PRICE_DIV),
   userInitialBalance01: toWei(1000 + 2000, TUSDT_DECIMALS).div(PRICE_DIV),
   userInitialBalance012: toWei(1000 + 2000 + 3000, TUSDT_DECIMALS).div(PRICE_DIV),
-  endTime2023: toUnixTime(PROD_DATA ? "2023-12-31 23:59:59" : "2023-04-30 23:59:59"),
+  endTime2023: toUnixTime(PROD_DATA ? "2023-05-31 23:59:59" : "2023-04-30 23:59:59"),
   emptyData: [],
   today: toUnixTime(),
   todayMinus1m: toUnixTime(dayjs().add(-1, "minute").toDate()),
@@ -49,19 +50,19 @@ export function getTestCollections(
 ): ICollectionItem[] {
   return [
     {
-      name: "Tesla Model 3 Stnd (1 Day)",
+      name: JSON_DICTIONARY[0].name,
       tokenCount,
       price: testValue.price0,
       expiryDate,
     },
     {
-      name: "Tesla Model 3 Prfm (1 Day)",
+      name: JSON_DICTIONARY[1].name,
       tokenCount,
       price: testValue.price1,
       expiryDate,
     },
     {
-      name: "Tesla Model Y (1 Day)",
+      name: JSON_DICTIONARY[2].name,
       tokenCount,
       price: testValue.price2,
       expiryDate,
