@@ -1,6 +1,6 @@
 import { expect } from "chai";
+import { seedData } from "seeds/seedData";
 
-import { testValue } from "../testData";
 import { checkToken, getCollectionName, initCollections, initCollectionsReal } from "../utils";
 
 export function shouldBehaveCorrectFetching(): void {
@@ -19,13 +19,13 @@ export function shouldBehaveCorrectFetching(): void {
       const resultTokenCount = await this.ownerCarBarContract.getCollectionCount();
       expect(resultTokenCount).equal(0);
 
-      await initCollections(this.ownerCarBarContract, testValue.collectionCount);
+      await initCollections(this.ownerCarBarContract, seedData.collectionCount);
 
       const collections = await this.ownerCarBarContract.fetchCollections();
 
-      expect(collections.length).equal(testValue.collectionCount);
+      expect(collections.length).equal(seedData.collectionCount);
 
-      for (let i = 0; i < testValue.collectionCount; i++) {
+      for (let i = 0; i < seedData.collectionCount; i++) {
         const collection = collections[i];
 
         const balance = await this.ownerCarBarContract.balanceOf(
@@ -55,112 +55,109 @@ export function shouldBehaveCorrectFetching(): void {
     });
 
     it("should be correct update certain collection", async function () {
-      await initCollections(this.ownerCarBarContract, testValue.collectionCount);
+      await initCollections(this.ownerCarBarContract, seedData.collectionCount);
 
       await this.ownerCarBarContract.updateCollection(
-        testValue.collectionId0,
+        seedData.collectionId0,
         getCollectionName(10),
       );
 
-      const collection = await this.ownerCarBarContract.fetchCollection(testValue.collectionId0);
+      const collection = await this.ownerCarBarContract.fetchCollection(seedData.collectionId0);
 
-      expect(collection.collectionId).eq(testValue.collectionId0);
+      expect(collection.collectionId).eq(seedData.collectionId0);
       expect(collection.collectionName).eq(getCollectionName(10));
-      expect(collection.tokenCount).eq(testValue.collectionId0 + 1);
-      expect(collection.price).eq(testValue.collectionId0 + 2);
-      expect(collection.expiryDate).eq(testValue.collectionId0 + 3);
+      expect(collection.tokenCount).eq(seedData.collectionId0 + 1);
+      expect(collection.price).eq(seedData.collectionId0 + 2);
+      expect(collection.expiryDate).eq(seedData.collectionId0 + 3);
     });
 
     it("should be correct update certain token", async function () {
-      await initCollections(this.ownerCarBarContract, testValue.collectionCount);
+      await initCollections(this.ownerCarBarContract, seedData.collectionCount);
 
       let token = await this.ownerCarBarContract.fetchToken(
-        testValue.collectionId0,
-        testValue.tokenId0,
+        seedData.collectionId0,
+        seedData.tokenId0,
       );
       const owner = token.owner;
       const sold = token.sold;
 
       await this.ownerCarBarContract.updateToken(
-        testValue.collectionId0,
-        testValue.tokenId0,
-        testValue.today,
+        seedData.collectionId0,
+        seedData.tokenId0,
+        seedData.today,
       );
 
-      token = await this.ownerCarBarContract.fetchToken(
-        testValue.collectionId0,
-        testValue.tokenId0,
-      );
+      token = await this.ownerCarBarContract.fetchToken(seedData.collectionId0, seedData.tokenId0);
 
-      expect(token.tokenId).eq(testValue.tokenId0);
+      expect(token.tokenId).eq(seedData.tokenId0);
       expect(token.owner).eq(owner);
-      expect(token.expiryDate).eq(testValue.today);
+      expect(token.expiryDate).eq(seedData.today);
       expect(token.sold).eq(sold);
     });
 
     it("should be correct balanceOf", async function () {
-      await initCollectionsReal(this.ownerCarBarContract, testValue.tokenCount);
+      await initCollectionsReal(this.ownerCarBarContract, seedData.tokenCount);
 
       expect(
-        await this.ownerCarBarContract.balanceOf(this.superOwner.address, testValue.collectionId0),
-      ).equal(testValue.tokenCount);
+        await this.ownerCarBarContract.balanceOf(this.superOwner.address, seedData.collectionId0),
+      ).equal(seedData.tokenCount);
 
       await this.ownerCarBarContract.updateToken(
-        testValue.collectionId0,
-        testValue.tokenId0,
-        testValue.todayMinus1m,
+        seedData.collectionId0,
+        seedData.tokenId0,
+        seedData.todayMinus1m,
       );
 
       expect(
-        await this.ownerCarBarContract.balanceOf(this.superOwner.address, testValue.collectionId0),
-      ).equal(testValue.tokenCount - 1);
+        await this.ownerCarBarContract.balanceOf(this.superOwner.address, seedData.collectionId0),
+      ).equal(seedData.tokenCount - 1);
 
       await this.ownerCarBarContract.updateToken(
-        testValue.collectionId0,
-        testValue.tokenId1,
-        testValue.todayMinus1m,
+        seedData.collectionId0,
+        seedData.tokenId1,
+        seedData.todayMinus1m,
       );
 
       expect(
-        await this.ownerCarBarContract.balanceOf(this.superOwner.address, testValue.collectionId0),
-      ).equal(testValue.tokenCount - 2);
+        await this.ownerCarBarContract.balanceOf(this.superOwner.address, seedData.collectionId0),
+      ).equal(seedData.tokenCount - 2);
     });
 
     it("should be correct balanceOf", async function () {
-      await initCollectionsReal(this.ownerCarBarContract, testValue.tokenCount);
+      await initCollectionsReal(this.ownerCarBarContract, seedData.tokenCount);
 
       expect(
         await this.ownerCarBarContract.balanceOfBatch(
           [this.superOwner.address],
-          [testValue.collectionId0],
+          [seedData.collectionId0],
         ),
-      ).deep.equal([testValue.tokenCount]);
+      ).deep.equal([seedData.tokenCount]);
 
       await this.ownerCarBarContract.updateToken(
-        testValue.collectionId0,
-        testValue.tokenId0,
-        testValue.todayMinus1m,
+        seedData.collectionId0,
+        seedData.tokenId0,
+        seedData.todayMinus1m,
       );
 
       expect(
         await this.ownerCarBarContract.balanceOfBatch(
           [this.superOwner.address],
-          [testValue.collectionId0],
+          [seedData.collectionId0],
         ),
-      ).deep.equal([testValue.tokenCount - 1]);
+      ).deep.equal([seedData.tokenCount - 1]);
 
       await this.ownerCarBarContract.updateToken(
-        testValue.collectionId0,
-        testValue.tokenId1,
-        testValue.todayMinus1m,
+        seedData.collectionId0,
+        seedData.tokenId1,
+        seedData.todayMinus1m,
       );
 
       expect(
         await this.ownerCarBarContract.balanceOfBatch(
           [this.superOwner.address],
-          [testValue.collectionId0],
+          [seedData.collectionId0],
         ),
-      ).deep.equal([testValue.tokenCount - 2]);
+      ).deep.equal([seedData.tokenCount - 2]);
     });
 
     it("should be correct USDT address", async function () {

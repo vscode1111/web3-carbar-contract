@@ -5,7 +5,7 @@ import { TokenSoldEvent } from "typechain-types/contracts/CarBarContract";
 import { callWithTimerHre, waitForTx } from "utils/common";
 import { getContext } from "utils/context";
 
-import { deployValue } from "../deployData";
+import { deployData } from "../deployData";
 import { getAddressesFromHre, getUSDTDecimalsFactor } from "../utils";
 
 const BUY_TOKEN = true;
@@ -24,7 +24,7 @@ const func: DeployFunction = async (hre: HardhatRuntimeEnvironment): Promise<voi
     const collections = await user1CarBarContract.fetchCollections();
     const factor = await getUSDTDecimalsFactor(user1TestUSDT);
 
-    const price = collections[deployValue.collectionId].price;
+    const price = collections[deployData.collectionId].price;
     console.log(`${price.toNumber() / factor} USDT price`);
 
     const allowance = await user1TestUSDT.allowance(user1.address, carBarAddress);
@@ -37,7 +37,7 @@ const func: DeployFunction = async (hre: HardhatRuntimeEnvironment): Promise<voi
 
     if (BUY_TOKEN) {
       const receipt = await waitForTx(
-        user1CarBarContract.buyToken(deployValue.collectionId),
+        user1CarBarContract.buyToken(deployData.collectionId),
         "buyToken",
       );
       const tokenSoldEvent = receipt.events?.find(

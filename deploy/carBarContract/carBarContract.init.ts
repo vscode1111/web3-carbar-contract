@@ -1,7 +1,7 @@
 import { CAR_BAR_CONTRACT_NAME } from "constants/addresses";
 import { DeployFunction } from "hardhat-deploy/types";
 import { HardhatRuntimeEnvironment } from "hardhat/types";
-import { getTestCollections } from "test/testData";
+import { getCollections } from "seeds/seedData";
 import { callWithTimerHre, waitForTx } from "utils/common";
 import { getCarBarContext, getUsers } from "utils/context";
 
@@ -21,7 +21,7 @@ const func: DeployFunction = async (hre: HardhatRuntimeEnvironment): Promise<voi
     await waitForTx(ownerCarBarContract.setURI(HOST_URL), "setURI");
 
     if (INIT_COLLECTION) {
-      const collections = getTestCollections();
+      const collections = getCollections();
 
       for (const collection of collections) {
         await waitForTx(

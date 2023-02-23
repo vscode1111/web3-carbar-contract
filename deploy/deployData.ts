@@ -2,7 +2,7 @@ import { toUnixTime } from "utils/common";
 
 import { IMetadata } from "./types";
 
-export const deployValue = {
+export const deployData = {
   collectionId: 0,
   tokenId: 0,
   today: toUnixTime(),
@@ -18,7 +18,7 @@ export const JSON_DICTIONARY: Record<string | number, IMetadata> = {
     Simply connect your wallet (Metamask or TrustWallet is required) and manage your reservation. Once you activate your personal account on the CAR BAR website and specify a pre-booking date, your NFT will get linked to this particular date.    
     Please note: to obtain a car, the driver must meet certain requirements. The rental company will also require a refundable deposit. See all the details and service terms in our FAQ.`,
   },
-  //Tokens
+  //Collections
   0: {
     name: "Tesla Model 3S (1 day rental)",
     image: "https://carbar.io/nft/Tesla_Model_3_Stnd.png",

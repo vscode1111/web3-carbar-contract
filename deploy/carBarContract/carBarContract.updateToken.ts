@@ -4,7 +4,7 @@ import { HardhatRuntimeEnvironment } from "hardhat/types";
 import { callWithTimerHre, waitForTx } from "utils/common";
 import { getCarBarContext, getUsers } from "utils/context";
 
-import { deployValue } from "../deployData";
+import { deployData } from "../deployData";
 import { getAddressesFromHre } from "../utils";
 
 const func: DeployFunction = async (hre: HardhatRuntimeEnvironment): Promise<void> => {
@@ -15,14 +15,14 @@ const func: DeployFunction = async (hre: HardhatRuntimeEnvironment): Promise<voi
 
     await waitForTx(
       ownerCarBarContract.updateToken(
-        deployValue.collectionId,
-        deployValue.tokenId,
-        deployValue.today,
+        deployData.collectionId,
+        deployData.tokenId,
+        deployData.today,
       ),
       "updateToken",
     );
 
-    console.log(`Token ${deployValue.collectionId}/${deployValue.tokenId} was updated`);
+    console.log(`Token ${deployData.collectionId}/${deployData.tokenId} was updated`);
   }, hre);
 };
 

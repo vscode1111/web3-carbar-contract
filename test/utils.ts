@@ -1,10 +1,11 @@
 import { expect } from "chai";
 import { BigNumber } from "ethers";
 import { Context } from "mocha";
+import { TOKEN_COUNT, getCollections, seedData } from "seeds/seedData";
 import { CarBarContract } from "typechain-types/contracts/CarBarContract";
 import { StringNumber } from "types/common";
 
-import { Sold, TOKEN_COUNT, getTestCollections, testValue } from "./testData";
+import { Sold } from "./testData";
 
 export function getCollectionName(name: StringNumber) {
   return `collection ${name}`;
@@ -19,9 +20,9 @@ export async function initCollections(carBarContract: CarBarContract, collection
 export async function initCollectionsReal(
   carBarContract: CarBarContract,
   tokenCount = TOKEN_COUNT,
-  expiryDate = testValue.endTime2023,
+  expiryDate = seedData.endTime2023,
 ) {
-  const collections = getTestCollections(tokenCount, expiryDate);
+  const collections = getCollections(tokenCount, expiryDate);
 
   for (const collection of collections) {
     await carBarContract.createCollection(
@@ -37,10 +38,10 @@ export async function initCollectionsRealWithBuying(
   that: Context,
   tokenCount = 3,
   collectionId = 0,
-  expiryDate = testValue.endTime2023,
+  expiryDate = seedData.endTime2023,
 ) {
-  await that.ownerTestUSDT.mint(that.user1.address, testValue.userInitialBalance0);
-  await that.user1TestUSDT.approve(that.ownerCarBarContract.address, testValue.price01);
+  await that.ownerTestUSDT.mint(that.user1.address, seedData.userInitialBalance0);
+  await that.user1TestUSDT.approve(that.ownerCarBarContract.address, seedData.price01);
   await initCollectionsReal(that.ownerCarBarContract, tokenCount, expiryDate);
   await that.user1CarBarContract.buyToken(collectionId);
 }

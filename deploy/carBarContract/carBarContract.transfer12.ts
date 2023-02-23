@@ -1,11 +1,11 @@
 import { CAR_BAR_CONTRACT_NAME } from "constants/addresses";
 import { DeployFunction } from "hardhat-deploy/types";
 import { HardhatRuntimeEnvironment } from "hardhat/types";
-import { testValue } from "test/testData";
+import { seedData } from "seeds/seedData";
 import { callWithTimerHre, waitForTx } from "utils/common";
 import { getCarBarContext, getUsers } from "utils/context";
 
-import { deployValue } from "../deployData";
+import { deployData } from "../deployData";
 import { getAddressesFromHre } from "../utils";
 
 const func: DeployFunction = async (hre: HardhatRuntimeEnvironment): Promise<void> => {
@@ -22,14 +22,14 @@ const func: DeployFunction = async (hre: HardhatRuntimeEnvironment): Promise<voi
       user1CarBarContract.safeTransferFrom(
         user1.address,
         user2.address,
-        testValue.collectionId0,
+        seedData.collectionId0,
         1,
-        testValue.emptyData,
+        seedData.emptyData,
       ),
       "safeTransferFrom",
     );
 
-    console.log(`Token of ${deployValue.collectionId} collection was safeTransfered`);
+    console.log(`Token of ${deployData.collectionId} collection was safeTransfered`);
   }, hre);
 };
 

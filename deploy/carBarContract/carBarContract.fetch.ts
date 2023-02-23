@@ -4,7 +4,7 @@ import { HardhatRuntimeEnvironment } from "hardhat/types";
 import { callWithTimerHre } from "utils/common";
 import { getCarBarContext, getUsers } from "utils/context";
 
-import { deployValue } from "../deployData";
+import { deployData } from "../deployData";
 import { getAddressesFromHre } from "../utils";
 
 const func: DeployFunction = async (hre: HardhatRuntimeEnvironment): Promise<void> => {
@@ -14,7 +14,7 @@ const func: DeployFunction = async (hre: HardhatRuntimeEnvironment): Promise<voi
     const { ownerCarBarContract } = await getCarBarContext(await getUsers(), carBarAddress);
     // const collections = await ownerCarBarContract.fetchCollections();
     // console.log(collections);
-    const tokens = await ownerCarBarContract.fetchTokens(deployValue.collectionId);
+    const tokens = await ownerCarBarContract.fetchTokens(deployData.collectionId);
     console.log(tokens.filter((token) => token.tokenId < 10));
   }, hre);
 };

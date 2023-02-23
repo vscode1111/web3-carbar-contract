@@ -19,6 +19,8 @@
       "constants/*": ["./constants/*"],
       "deploy": ["./deploy"],
       "deploy/*": ["./deploy/*"],
+      "seeds": ["./seeds"],
+      "seeds/*": ["./seeds/*"],
       "types": ["./types"],
       "types/*": ["./types/*"],
       "utils": ["./utils"],

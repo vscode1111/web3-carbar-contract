@@ -1,10 +1,11 @@
 import { expect } from "chai";
 import { getUSDTDecimalsFactor } from "deploy/utils";
+import { seedData } from "seeds/seedData";
 import { ContextBase } from "test/types";
 import { CarBarContract, TokenSoldEvent } from "typechain-types/contracts/CarBarContract";
 import { attempt, waitForTx } from "utils/common";
 
-import { errorMessage, testValue } from "../testData";
+import { errorMessage } from "../testData";
 import { errorHandler, getCollectionName, getNow, initCollectionsReal } from "../utils";
 
 function findTokenCount(tokens: CarBarContract.TokenItemStructOutput[], address: string) {
@@ -54,25 +55,25 @@ export async function user1BuysToken(that: ContextBase) {
   console.log(labels.user1BuysToken);
 
   await waitForTx(
-    that.user1TestUSDT.approve(that.ownerCarBarContract.address, testValue.price0),
+    that.user1TestUSDT.approve(that.ownerCarBarContract.address, seedData.price0),
     "approve",
-    testValue.attemps,
-    testValue.delayMs,
+    seedData.attemps,
+    seedData.delayMs,
   );
 
-  let tokens = await that.ownerCarBarContract.fetchTokens(testValue.collectionId0);
+  let tokens = await that.ownerCarBarContract.fetchTokens(seedData.collectionId0);
   let user1TokenCount0 = findTokenCount(tokens, that.user1.address);
 
   const receipt = await waitForTx(
-    that.user1CarBarContract.buyToken(testValue.collectionId0),
+    that.user1CarBarContract.buyToken(seedData.collectionId0),
     "buyToken",
-    testValue.attemps,
-    testValue.delayMs,
+    seedData.attemps,
+    seedData.delayMs,
   );
 
   await attempt(
     async () => {
-      tokens = await that.ownerCarBarContract.fetchTokens(testValue.collectionId0);
+      tokens = await that.ownerCarBarContract.fetchTokens(seedData.collectionId0);
       let user1TokenCount1 = findTokenCount(tokens, that.user1.address);
       expect(user1TokenCount1).eq(user1TokenCount0 + 1);
 
@@ -84,156 +85,156 @@ export async function user1BuysToken(that: ContextBase) {
 
       const { collectionId, tokenId, seller, owner, price, timestamp } = tokenSoldEvent?.args;
 
-      expect(collectionId).equal(testValue.collectionId0);
+      expect(collectionId).equal(seedData.collectionId0);
       expect(tokenId).greaterThanOrEqual(0);
       expect(seller).equal(that.superOwner.address);
       expect(owner).equal(that.user1.address);
-      expect(price).equal(testValue.price0);
-      expect(timestamp).closeTo(getNow(), testValue.timeDelta);
+      expect(price).equal(seedData.price0);
+      expect(timestamp).closeTo(getNow(), seedData.timeDelta);
     },
-    testValue.attemps,
-    testValue.delayMs,
+    seedData.attemps,
+    seedData.delayMs,
   );
 }
 
 export async function user1TransfersToken(that: ContextBase) {
   console.log(labels.user1TransfersToken);
-  let tokens = await that.ownerCarBarContract.fetchTokens(testValue.collectionId0);
+  let tokens = await that.ownerCarBarContract.fetchTokens(seedData.collectionId0);
   const user1TokenCount0 = findTokenCount(tokens, that.user1.address);
 
   await waitForTx(
     that.user1CarBarContract.safeTransferFrom(
       that.user1.address,
       that.user2.address,
-      testValue.collectionId0,
+      seedData.collectionId0,
       1,
-      testValue.emptyData,
+      seedData.emptyData,
     ),
     "safeTransferFrom",
-    testValue.attemps,
-    testValue.delayMs,
+    seedData.attemps,
+    seedData.delayMs,
   );
 
   await attempt(
     async () => {
-      tokens = await that.ownerCarBarContract.fetchTokens(testValue.collectionId0);
+      tokens = await that.ownerCarBarContract.fetchTokens(seedData.collectionId0);
       const user1TokenCount1 = findTokenCount(tokens, that.user1.address);
       expect(user1TokenCount1).eq(user1TokenCount0 - 1);
     },
-    testValue.attemps,
-    testValue.delayMs,
+    seedData.attemps,
+    seedData.delayMs,
   );
 }
 
 export async function user2TransfersBackToken(that: ContextBase) {
   console.log(labels.user2TransfersBackToken);
-  let tokens = await that.ownerCarBarContract.fetchTokens(testValue.collectionId0);
+  let tokens = await that.ownerCarBarContract.fetchTokens(seedData.collectionId0);
   const user2TokenCount0 = findTokenCount(tokens, that.user2.address);
 
   await waitForTx(
     that.user2CarBarContract.safeTransferFrom(
       that.user2.address,
       that.superOwner.address,
-      testValue.collectionId0,
+      seedData.collectionId0,
       1,
-      testValue.emptyData,
+      seedData.emptyData,
     ),
     "safeTransferFrom",
-    testValue.attemps,
-    testValue.delayMs,
+    seedData.attemps,
+    seedData.delayMs,
   );
 
   await attempt(
     async () => {
-      tokens = await that.ownerCarBarContract.fetchTokens(testValue.collectionId0);
+      tokens = await that.ownerCarBarContract.fetchTokens(seedData.collectionId0);
       const user2TokenCount1 = findTokenCount(tokens, that.user2.address);
       expect(user2TokenCount1).eq(user2TokenCount0 - 1);
     },
-    testValue.attemps,
-    testValue.delayMs,
+    seedData.attemps,
+    seedData.delayMs,
   );
 }
 
 export async function onwerTransfersToken(that: ContextBase) {
   console.log(labels.onwerTransfersToken);
-  let tokens = await that.ownerCarBarContract.fetchTokens(testValue.collectionId0);
+  let tokens = await that.ownerCarBarContract.fetchTokens(seedData.collectionId0);
   const user1TokenCount0 = findTokenCount(tokens, that.user1.address);
 
   await waitForTx(
     that.ownerCarBarContract.safeTransferFrom(
       that.superOwner.address,
       that.user1.address,
-      testValue.collectionId0,
+      seedData.collectionId0,
       1,
-      testValue.emptyData,
+      seedData.emptyData,
     ),
     "safeTransferFrom",
-    testValue.attemps,
-    testValue.delayMs,
+    seedData.attemps,
+    seedData.delayMs,
   );
 
   await attempt(
     async () => {
-      tokens = await that.ownerCarBarContract.fetchTokens(testValue.collectionId0);
+      tokens = await that.ownerCarBarContract.fetchTokens(seedData.collectionId0);
       const user1TokenCount1 = findTokenCount(tokens, that.user1.address);
       expect(user1TokenCount1).eq(user1TokenCount0 + 1);
     },
-    testValue.attemps,
-    testValue.delayMs,
+    seedData.attemps,
+    seedData.delayMs,
   );
 }
 
 export async function shopTransfersToken(that: ContextBase) {
   console.log(labels.shopTransfersToken);
-  let tokens = await that.ownerCarBarContract.fetchTokens(testValue.collectionId0);
+  let tokens = await that.ownerCarBarContract.fetchTokens(seedData.collectionId0);
   const user1TokenCount0 = findTokenCount(tokens, that.user1.address);
 
   await waitForTx(
     that.superOwnerCarBarContract.setApprovalForAll(that.shop.address, true),
     "setApprovalForAll",
-    testValue.attemps,
-    testValue.delayMs,
+    seedData.attemps,
+    seedData.delayMs,
   );
 
   await waitForTx(
     that.shopCarBarContract.safeTransferFrom(
       that.superOwner.address,
       that.user1.address,
-      testValue.collectionId0,
+      seedData.collectionId0,
       1,
-      testValue.emptyData,
+      seedData.emptyData,
     ),
     "safeTransferFrom",
-    testValue.attemps,
-    testValue.delayMs,
+    seedData.attemps,
+    seedData.delayMs,
   );
 
   await attempt(
     async () => {
-      tokens = await that.ownerCarBarContract.fetchTokens(testValue.collectionId0);
+      tokens = await that.ownerCarBarContract.fetchTokens(seedData.collectionId0);
       const user1TokenCount1 = findTokenCount(tokens, that.user1.address);
       expect(user1TokenCount1).eq(user1TokenCount0 + 1);
     },
-    testValue.attemps,
-    testValue.delayMs,
+    seedData.attemps,
+    seedData.delayMs,
   );
 }
 
 export async function ownerUpdatesCollection(that: ContextBase) {
   console.log(labels.ownerUpdatesCollection);
-  const oldCollection = await that.ownerCarBarContract.fetchCollection(testValue.collectionId0);
+  const oldCollection = await that.ownerCarBarContract.fetchCollection(seedData.collectionId0);
 
   const testName = getCollectionName(10);
 
   await waitForTx(
-    that.ownerCarBarContract.updateCollection(testValue.collectionId0, testName),
+    that.ownerCarBarContract.updateCollection(seedData.collectionId0, testName),
     "updateCollection",
   );
 
   await attempt(
     async () => {
       const updatedCollection = await that.ownerCarBarContract.fetchCollection(
-        testValue.collectionId0,
+        seedData.collectionId0,
       );
       expect(updatedCollection.collectionId).eq(oldCollection.collectionId);
       expect(updatedCollection.collectionName).eq(testName);
@@ -241,80 +242,64 @@ export async function ownerUpdatesCollection(that: ContextBase) {
       expect(updatedCollection.price).eq(oldCollection.price);
       expect(updatedCollection.expiryDate).eq(oldCollection.expiryDate);
     },
-    testValue.attemps,
-    testValue.delayMs,
+    seedData.attemps,
+    seedData.delayMs,
   );
 }
 
 export async function ownerUpdatesToken(that: ContextBase) {
   console.log(labels.ownerUpdatesToken);
-  let token = await that.ownerCarBarContract.fetchToken(
-    testValue.collectionId0,
-    testValue.tokenId0,
-  );
+  let token = await that.ownerCarBarContract.fetchToken(seedData.collectionId0, seedData.tokenId0);
   const owner_ = token.owner;
   const sold = token.sold;
 
   await waitForTx(
-    that.ownerCarBarContract.updateToken(
-      testValue.collectionId0,
-      testValue.tokenId0,
-      testValue.today,
-    ),
+    that.ownerCarBarContract.updateToken(seedData.collectionId0, seedData.tokenId0, seedData.today),
     "updateToken",
-    testValue.attemps,
-    testValue.delayMs,
+    seedData.attemps,
+    seedData.delayMs,
   );
 
   await attempt(
     async () => {
-      token = await that.ownerCarBarContract.fetchToken(
-        testValue.collectionId0,
-        testValue.tokenId0,
-      );
-      expect(token.tokenId).eq(testValue.tokenId0);
+      token = await that.ownerCarBarContract.fetchToken(seedData.collectionId0, seedData.tokenId0);
+      expect(token.tokenId).eq(seedData.tokenId0);
       expect(token.owner).eq(owner_);
-      expect(token.expiryDate).eq(testValue.today);
+      expect(token.expiryDate).eq(seedData.today);
       expect(token.sold).eq(sold);
     },
-    testValue.attemps,
-    testValue.delayMs,
+    seedData.attemps,
+    seedData.delayMs,
   );
 }
 
 export async function owner2UpdatesToken(that: ContextBase) {
   console.log(labels.owner2UpdatesToken);
-  let token = await that.ownerCarBarContract.fetchToken(
-    testValue.collectionId0,
-    testValue.tokenId0,
-  );
+  let token = await that.ownerCarBarContract.fetchToken(seedData.collectionId0, seedData.tokenId0);
   const owner_ = token.owner;
   const sold = token.sold;
 
   await waitForTx(
     that.owner2CarBarContract.updateToken(
-      testValue.collectionId0,
-      testValue.tokenId0,
-      testValue.today,
+      seedData.collectionId0,
+      seedData.tokenId0,
+      seedData.today,
     ),
     "updateToken",
-    testValue.attemps,
-    testValue.delayMs,
+    seedData.attemps,
+    seedData.delayMs,
   );
 
   await attempt(
     async () => {
-      token = await that.ownerCarBarContract.fetchToken(
-        testValue.collectionId0,
-        testValue.tokenId0,
-      );
-      expect(token.tokenId).eq(testValue.tokenId0);
+      token = await that.ownerCarBarContract.fetchToken(seedData.collectionId0, seedData.tokenId0);
+      expect(token.tokenId).eq(seedData.tokenId0);
       expect(token.owner).eq(owner_);
-      expect(token.expiryDate).eq(testValue.today);
+      expect(token.expiryDate).eq(seedData.today);
       expect(token.sold).eq(sold);
     },
-    testValue.attemps,
-    testValue.delayMs,
+    seedData.attemps,
+    seedData.delayMs,
   );
 }
 
@@ -325,14 +310,14 @@ export async function ownerTriesToUpdateToken(that: ContextBase) {
     async () => {
       await expect(
         that.ownerCarBarContract.updateToken(
-          testValue.collectionId0,
-          testValue.tokenId0,
-          testValue.today,
+          seedData.collectionId0,
+          seedData.tokenId0,
+          seedData.today,
         ),
       ).rejected.then((e) => errorHandler(e, errorMessage.onlySuperOwnerOrOwner));
     },
-    testValue.attemps,
-    testValue.delayMs,
+    seedData.attemps,
+    seedData.delayMs,
   );
 }
 
@@ -347,8 +332,8 @@ export async function superOwnerWithdraws(that: ContextBase) {
   await waitForTx(
     that.superOwnerCarBarContract.withdraw(that.user1.address, carBarAmount0),
     "withdraw",
-    testValue.attemps,
-    testValue.delayMs,
+    seedData.attemps,
+    seedData.delayMs,
   );
 
   console.log(`${carBarAmount0.toNumber() / factor} USDT was withdrawed to ${that.user1.address}`);
@@ -361,8 +346,8 @@ export async function superOwnerWithdraws(that: ContextBase) {
       const user1Amount1 = await that.ownerTestUSDT.balanceOf(that.user1.address);
       expect(user1Amount1).eq(user1Amount0.add(carBarAmount0));
     },
-    testValue.attemps,
-    testValue.delayMs,
+    seedData.attemps,
+    seedData.delayMs,
   );
 }
 
@@ -372,11 +357,11 @@ export async function ownerTriesToWithdraw(that: ContextBase) {
   await attempt(
     async () => {
       await expect(
-        that.ownerCarBarContract.withdraw(that.owner.address, testValue.zero),
+        that.ownerCarBarContract.withdraw(that.owner.address, seedData.zero),
       ).rejected.then((e) => errorHandler(e, errorMessage.onlySuperOwnerOrPermittedOwner));
     },
-    testValue.attemps,
-    testValue.delayMs,
+    seedData.attemps,
+    seedData.delayMs,
   );
 }
 
@@ -386,11 +371,11 @@ export async function user1TriesToWithdraw(that: ContextBase) {
   await attempt(
     async () => {
       await expect(
-        that.ownerCarBarContract.withdraw(that.user1.address, testValue.zero),
+        that.ownerCarBarContract.withdraw(that.user1.address, seedData.zero),
       ).rejected.then((e) => errorHandler(e, errorMessage.onlySuperOwnerOrPermittedOwner));
     },
-    testValue.attemps,
-    testValue.delayMs,
+    seedData.attemps,
+    seedData.delayMs,
   );
 }
 
@@ -400,8 +385,8 @@ export async function ownerWithdrawsWithPermission(that: ContextBase) {
   await waitForTx(
     that.superOwnerCarBarContract.giveSuperOwnerPermissionToOwner(1),
     "giveSuperOwnerPermissionToOwner",
-    testValue.attemps,
-    testValue.delayMs,
+    seedData.attemps,
+    seedData.delayMs,
   );
 
   const carBarAmount0 = await that.ownerTestUSDT.balanceOf(that.ownerCarBarContract.address);
@@ -414,8 +399,8 @@ export async function ownerWithdrawsWithPermission(that: ContextBase) {
   await waitForTx(
     that.ownerCarBarContract.withdraw(that.user1.address, carBarAmount0),
     "withdraw",
-    testValue.attemps,
-    testValue.delayMs,
+    seedData.attemps,
+    seedData.delayMs,
   );
 
   console.log(`${carBarAmount0.toNumber() / factor} USDT was withdrawed to ${that.user1.address}`);
@@ -428,15 +413,15 @@ export async function ownerWithdrawsWithPermission(that: ContextBase) {
       const user1Amount1 = await that.ownerTestUSDT.balanceOf(that.user1.address);
       expect(user1Amount1).eq(user1Amount0.add(carBarAmount0));
     },
-    testValue.attemps,
-    testValue.delayMs,
+    seedData.attemps,
+    seedData.delayMs,
   );
 
   await waitForTx(
     that.superOwnerCarBarContract.giveSuperOwnerPermissionToOwner(0),
     "giveSuperOwnerPermissionToOwner",
-    testValue.attemps,
-    testValue.delayMs,
+    seedData.attemps,
+    seedData.delayMs,
   );
 }
 
@@ -446,8 +431,8 @@ export async function setOwner(that: ContextBase) {
   await waitForTx(
     that.superOwnerCarBarContract.setOwner(that.owner.address),
     "setOwner",
-    testValue.attemps,
-    testValue.delayMs,
+    seedData.attemps,
+    seedData.delayMs,
   );
 
   await attempt(
@@ -455,8 +440,8 @@ export async function setOwner(that: ContextBase) {
       const owner = await that.superOwnerCarBarContract.owner();
       expect(owner).eq(that.owner.address);
     },
-    testValue.attemps,
-    testValue.delayMs,
+    seedData.attemps,
+    seedData.delayMs,
   );
 
   console.log(`Owner was set to ${that.owner.address}`);
@@ -468,8 +453,8 @@ export async function setOwner2(that: ContextBase) {
   await waitForTx(
     that.superOwnerCarBarContract.setOwner(that.owner2.address),
     "setOwner",
-    testValue.attemps,
-    testValue.delayMs,
+    seedData.attemps,
+    seedData.delayMs,
   );
 
   await attempt(
@@ -477,8 +462,8 @@ export async function setOwner2(that: ContextBase) {
       const owner2 = await that.superOwnerCarBarContract.owner();
       expect(owner2).eq(that.owner2.address);
     },
-    testValue.attemps,
-    testValue.delayMs,
+    seedData.attemps,
+    seedData.delayMs,
   );
 
   console.log(`Owner was set to ${that.owner.address}`);
@@ -487,7 +472,7 @@ export async function setOwner2(that: ContextBase) {
 export function shouldBehaveCorrectSmokeTest(): void {
   describe("smoke test", () => {
     beforeEach(async function () {
-      await this.ownerTestUSDT.mint(this.user1.address, testValue.userInitialBalance0);
+      await this.ownerTestUSDT.mint(this.user1.address, seedData.userInitialBalance0);
       await initCollectionsReal(this.ownerCarBarContract);
       await this.superOwnerCarBarContract.giveSuperOwnerPermissionToOwner(0);
     });

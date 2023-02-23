@@ -3,7 +3,8 @@ import { SignerWithAddress } from "@nomiclabs/hardhat-ethers/signers";
 import { getImplementationAddress } from "@openzeppelin/upgrades-core";
 import { expect } from "chai";
 import { ethers, upgrades } from "hardhat";
-import { Roles, Sold, errorMessage, testValue } from "test/testData";
+import { seedData } from "seeds/seedData";
+import { Roles, Sold, errorMessage } from "test/testData";
 import { ContextBase } from "test/types";
 import {
   getCollectionName,
@@ -37,33 +38,33 @@ async function withdraw(
   testUSDT: TestUSDT,
   user1: SignerWithAddress,
 ) {
-  await carBarContract.withdraw(user1.address, testValue.price0);
+  await carBarContract.withdraw(user1.address, seedData.price0);
 
-  expect(await testUSDT.balanceOf(carBarContract.address)).equal(testValue.zero);
-  expect(await testUSDT.balanceOf(user1.address)).equal(testValue.userInitialBalance0);
+  expect(await testUSDT.balanceOf(carBarContract.address)).equal(seedData.zero);
+  expect(await testUSDT.balanceOf(user1.address)).equal(seedData.userInitialBalance0);
 }
 
 async function updateToken(carBarContract: CarBarContract) {
-  const oldToken = await carBarContract.fetchToken(testValue.collectionId0, testValue.tokenId0);
+  const oldToken = await carBarContract.fetchToken(seedData.collectionId0, seedData.tokenId0);
 
   await carBarContract.updateToken(
-    testValue.collectionId0,
-    testValue.tokenId0,
-    testValue.todayMinus1m,
+    seedData.collectionId0,
+    seedData.tokenId0,
+    seedData.todayMinus1m,
   );
 
-  const updatedToken = await carBarContract.fetchToken(testValue.collectionId0, testValue.tokenId0);
+  const updatedToken = await carBarContract.fetchToken(seedData.collectionId0, seedData.tokenId0);
   expect(updatedToken.owner).equal(oldToken.owner);
   expect(updatedToken.sold).equal(oldToken.sold);
-  expect(updatedToken.expiryDate).equal(testValue.todayMinus1m);
+  expect(updatedToken.expiryDate).equal(seedData.todayMinus1m);
 }
 
 async function updateCollection(carBarContract: CarBarContract) {
-  const oldCollection = await carBarContract.fetchCollection(testValue.collectionId0);
+  const oldCollection = await carBarContract.fetchCollection(seedData.collectionId0);
 
-  await carBarContract.updateCollection(testValue.collectionId0, getCollectionName(10));
+  await carBarContract.updateCollection(seedData.collectionId0, getCollectionName(10));
 
-  const updatedCollection = await carBarContract.fetchCollection(testValue.collectionId0);
+  const updatedCollection = await carBarContract.fetchCollection(seedData.collectionId0);
 
   expect(updatedCollection.collectionId).eq(oldCollection.collectionId);
   expect(updatedCollection.collectionName).eq(getCollectionName(10));
@@ -73,9 +74,9 @@ async function updateCollection(carBarContract: CarBarContract) {
 }
 
 async function userBuyToken(that: ContextBase) {
-  await that.user1CarBarContract.buyToken(testValue.collectionId0);
+  await that.user1CarBarContract.buyToken(seedData.collectionId0);
   expect(
-    await that.user1CarBarContract.balanceOf(that.user1.address, testValue.collectionId0),
+    await that.user1CarBarContract.balanceOf(that.user1.address, seedData.collectionId0),
   ).equal(2);
 }
 
@@ -85,10 +86,10 @@ async function userSafeTransferFrom(that: ContextBase) {
     that.user2.address,
     0,
     1,
-    testValue.emptyData,
+    seedData.emptyData,
   );
 
-  let tokens = await that.ownerCarBarContract.fetchTokens(testValue.collectionId0);
+  let tokens = await that.ownerCarBarContract.fetchTokens(seedData.collectionId0);
   expect(tokens[0].owner).equal(that.user2.address);
   expect(tokens[0].sold).equal(Sold.Transfer);
   expect(tokens[1].owner).equal(that.superOwner.address);
@@ -157,7 +158,7 @@ export function shouldBehaveCorrectRoles(): void {
       );
 
       expect(await this.ownerTestUSDT.balanceOf(this.ownerCarBarContract.address)).equal(
-        testValue.price0,
+        seedData.price0,
       );
 
       expect(await getTotalBalance(this.ownerCarBarContract, this.superOwner.address)).eq(8);
@@ -200,7 +201,7 @@ export function shouldBehaveCorrectRoles(): void {
         ).eq(false);
         expect(await this.ownerCarBarContract.hasOwnerSuperOwnerPermission()).eq(false);
         expect(await this.ownerTestUSDT.balanceOf(this.user1.address)).equal(
-          testValue.userInitialBalance0.sub(testValue.price0),
+          seedData.userInitialBalance0.sub(seedData.price0),
         );
 
         expect(await getTotalBalance(this.ownerCarBarContract, this.superOwner.address)).eq(8);
@@ -255,7 +256,7 @@ export function shouldBehaveCorrectRoles(): void {
         it("initial check", async function () {
           expect(await this.superOwnerCarBarContract.superOwnerPermissionTimeLimit()).closeTo(
             getNow() + 3600,
-            testValue.timeDelta,
+            seedData.timeDelta,
           );
         });
 
@@ -273,7 +274,7 @@ export function shouldBehaveCorrectRoles(): void {
 
         describe("after some time", () => {
           beforeEach(async function () {
-            await time.increaseTo(testValue.todayPlus1h + testValue.timeDelta);
+            await time.increaseTo(seedData.todayPlus1h + seedData.timeDelta);
           });
 
           it("superOwner is allowed to upgrade contract", async function () {

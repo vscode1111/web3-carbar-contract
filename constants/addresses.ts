@@ -18,7 +18,8 @@ export enum ACCOUNT_LIST {
 export const CONTRACTS: Record<CONTRACT_LIST, DeployNetworks> = {
   CAR_BAR: {
     opera: "0xB4a13C969E2fA3d95B7EC0b5253761616A2E4bE5",
-    polygon: "0x0259d6571C0B9bcc6e19190c7e6C10FA20aA7Ef0",
+    // polygon: "0x0259d6571C0B9bcc6e19190c7e6C10FA20aA7Ef0", //test
+    polygon: "0x18cbBeF3285d31e3b08b7487D5a5FF527e5E2674", //prod
   },
 };
 
