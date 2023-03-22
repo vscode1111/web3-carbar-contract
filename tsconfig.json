@@ -17,6 +17,8 @@
     "paths": {
       "constants": ["./constants"],
       "constants/*": ["./constants/*"],
+      "common": ["./common"],
+      "common/*": ["./common/*"],
       "deploy": ["./deploy"],
       "deploy/*": ["./deploy/*"],
       "seeds": ["./seeds"],

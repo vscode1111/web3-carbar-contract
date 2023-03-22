@@ -1,15 +1,10 @@
 import { expect } from "chai";
+import { getNow, vmEsceptionText, waitTx } from "common";
 import { seedData } from "seeds/seedData";
 import { TokenSoldEvent } from "typechain-types/contracts/CarBarContract";
-import { waitForTx } from "utils/common";
 
 import { Sold, errorMessage } from "../testData";
-import {
-  getNow,
-  initCollectionsReal,
-  initCollectionsRealWithBuying,
-  vmEsceptionText,
-} from "../utils";
+import { initCollectionsReal, initCollectionsRealWithBuying } from "../utils";
 
 export function shouldBehaveCorrectPayment(): void {
   describe("payment", () => {
@@ -50,7 +45,7 @@ export function shouldBehaveCorrectPayment(): void {
 
       await this.user1TestUSDT.approve(this.ownerCarBarContract.address, seedData.price0);
 
-      const receipt = await waitForTx(this.user1CarBarContract.buyToken(seedData.collectionId0));
+      const receipt = await waitTx(this.user1CarBarContract.buyToken(seedData.collectionId0));
 
       const tokenSoldEvent = receipt.events?.find(
         (item) => item.event === "TokenSold",

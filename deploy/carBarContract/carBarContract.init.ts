@@ -1,11 +1,9 @@
+import { callWithTimerHre, waitTx } from "common";
 import { CAR_BAR_CONTRACT_NAME } from "constants/addresses";
 import { DeployFunction } from "hardhat-deploy/types";
 import { HardhatRuntimeEnvironment } from "hardhat/types";
 import { getCollections } from "seeds/seedData";
-import { callWithTimerHre, waitForTx } from "utils/common";
-import { getCarBarContext, getUsers } from "utils/context";
-
-import { getAddressesFromHre } from "../utils";
+import { getAddressesFromHre, getCarBarContext, getUsers } from "utils";
 
 const HOST_URL = "https://carbar.io/nft_json/cr1/";
 const INIT_COLLECTION = true;
@@ -16,15 +14,15 @@ const func: DeployFunction = async (hre: HardhatRuntimeEnvironment): Promise<voi
     console.log(`${CAR_BAR_CONTRACT_NAME} ${carBarAddress} is initiating...`);
     const { ownerCarBarContract } = await getCarBarContext(await getUsers(), carBarAddress);
 
-    await waitForTx(ownerCarBarContract.setName(`carbar.io v1`), "setName");
-    await waitForTx(ownerCarBarContract.setSymbol(`carbar`), "setSymbol");
-    await waitForTx(ownerCarBarContract.setURI(HOST_URL), "setURI");
+    await waitTx(ownerCarBarContract.setName(`carbar.io v1`), "setName");
+    await waitTx(ownerCarBarContract.setSymbol(`carbar`), "setSymbol");
+    await waitTx(ownerCarBarContract.setURI(HOST_URL), "setURI");
 
     if (INIT_COLLECTION) {
       const collections = getCollections();
 
       for (const collection of collections) {
-        await waitForTx(
+        await waitTx(
           ownerCarBarContract.createCollection(
             collection.name,
             collection.tokenCount,

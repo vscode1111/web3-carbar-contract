@@ -4,7 +4,7 @@ import { CarBarContract } from "typechain-types/contracts/CarBarContract";
 import { TestUSDT } from "typechain-types/contracts/TestUSDT";
 import { CarBarContract__factory } from "typechain-types/factories/contracts/CarBarContract__factory";
 import { TestUSDT__factory } from "typechain-types/factories/contracts/TestUSDT__factory";
-import { DeployNetworks } from "types/common";
+import { DeployNetworks } from "types";
 
 export function shouldBehaveCorrectForking(): void {
   describe.skip("forking", () => {

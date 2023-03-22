@@ -2,20 +2,15 @@ import { time } from "@nomicfoundation/hardhat-network-helpers";
 import { SignerWithAddress } from "@nomiclabs/hardhat-ethers/signers";
 import { getImplementationAddress } from "@openzeppelin/upgrades-core";
 import { expect } from "chai";
+import { DECIMAL_FACTOR, getNow, toNumber, vmEsceptionText } from "common";
 import { ethers, upgrades } from "hardhat";
 import { seedData } from "seeds/seedData";
 import { Roles, Sold, errorMessage } from "test/testData";
 import { ContextBase } from "test/types";
-import {
-  getCollectionName,
-  getNow,
-  initCollectionsRealWithBuying,
-  vmEsceptionText,
-} from "test/utils";
+import { getCollectionName, initCollectionsRealWithBuying } from "test/utils";
 import { CarBarContract } from "typechain-types/contracts/CarBarContract";
 import { TestUSDT } from "typechain-types/contracts/TestUSDT";
 import { CarBarContract__factory } from "typechain-types/factories/contracts/CarBarContract__factory";
-import { DECIMAL_FACTOR, toNumber } from "utils/common";
 
 async function upgradeContract(carBarContractAddress: string, owner: SignerWithAddress) {
   const carBarContractFactory = <CarBarContract__factory>(

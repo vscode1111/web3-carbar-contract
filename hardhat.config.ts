@@ -7,20 +7,14 @@ import { HardhatUserConfig } from "hardhat/config";
 import { NetworkUserConfig } from "hardhat/types";
 import { resolve } from "path";
 import "tsconfig-paths/register";
-import { DeployNetworks } from "types/common";
+import { DeployNetworks } from "types";
+
+import { getEnv } from "./common/config";
 
 const dotenvConfigPath: string = process.env.DOTENV_CONFIG_PATH || "./.env";
 dotenvConfig({
   path: resolve(__dirname, dotenvConfigPath),
 });
-
-function getEnv(key: string) {
-  const envKey = process.env[key];
-  if (!envKey) {
-    throw new Error(`Please set your ${key} in a .env file`);
-  }
-  return envKey;
-}
 
 function getChainConfig(chain: keyof DeployNetworks): NetworkUserConfig & { url?: string } {
   return {
@@ -42,13 +36,12 @@ const config: HardhatUserConfig = {
   defaultNetwork,
   etherscan: {
     apiKey: {
-      opera: process.env.OPERASCAN_API_KEY || "",
-      polygon: process.env.POLYGONSCAN_API_KEY || "",
+      polygon: getEnv("POLYGONSCAN_API_KEY"),
+      opera: getEnv("OPERASCAN_API_KEY"),
     },
   },
   gasReporter: {
     currency: "USD",
-    // enabled: process.env.REPORT_GAS ? true : false,
     enabled: false,
     excludeContracts: [],
     src: "./contracts",
@@ -58,10 +51,9 @@ const config: HardhatUserConfig = {
       forking: {
         enabled: false,
         url: getChainConfig(defaultNetwork).url ?? "",
-        // blockNumber: 38747028, // <-- edit here
-        blockNumber: 38759005, // <-- edit here
+        blockNumber: 39656567, // <-- edit here
       },
-      initialBaseFeePerGas: 0, // workaround from https://github.com/sc-forks/solidity-coverage/issues/652#issuecomment-896330136 . Remove when that issue is closed.
+      initialBaseFeePerGas: 0,
       mining: {
         auto: true,
       },

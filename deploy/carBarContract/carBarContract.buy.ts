@@ -1,12 +1,12 @@
+import { callWithTimerHre, waitTx } from "common";
 import { CAR_BAR_CONTRACT_NAME } from "constants/addresses";
 import { DeployFunction } from "hardhat-deploy/types";
 import { HardhatRuntimeEnvironment } from "hardhat/types";
 import { TokenSoldEvent } from "typechain-types/contracts/CarBarContract";
-import { callWithTimerHre, waitForTx } from "utils/common";
-import { getContext } from "utils/context";
+import { getAddressesFromHre, getContext } from "utils";
 
 import { deployData } from "../deployData";
-import { getAddressesFromHre, getUSDTDecimalsFactor } from "../utils";
+import { getUSDTDecimalsFactor } from "../utils";
 
 const BUY_TOKEN = true;
 
@@ -31,12 +31,12 @@ const func: DeployFunction = async (hre: HardhatRuntimeEnvironment): Promise<voi
     console.log(`${allowance.toNumber() / factor} USDT was allowed`);
 
     if (price.gt(allowance)) {
-      await waitForTx(user1TestUSDT.approve(carBarAddress, price), "approve");
+      await waitTx(user1TestUSDT.approve(carBarAddress, price), "approve");
       console.log(`${price.toNumber() / factor} USDT was approved`);
     }
 
     if (BUY_TOKEN) {
-      const receipt = await waitForTx(
+      const receipt = await waitTx(
         user1CarBarContract.buyToken(deployData.collectionId),
         "buyToken",
       );

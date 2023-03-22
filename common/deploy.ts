@@ -1,46 +1,14 @@
-import { BigNumber, BigNumberish, ContractReceipt, ContractTransaction } from "ethers";
+import { ContractReceipt, ContractTransaction } from "ethers";
 import { ethers } from "hardhat";
 import { HardhatRuntimeEnvironment } from "hardhat/types";
 import _ from "lodash";
-import { StringNumber } from "types/common";
+import { DeployNetworks } from "types";
 
 import { DiffArray } from "./DiffArray";
+import { toNumber } from "./misc";
 
 export const DECIMAL_FACTOR = 1e18;
 const FRACTION_DIGITS = 3;
-
-export function toWei(value: StringNumber, unitName?: BigNumberish): BigNumber {
-  return ethers.utils.parseUnits(String(value), unitName);
-}
-
-export function toNumber(value: BigNumber, factor = 1): number {
-  return Number(ethers.utils.formatEther(value)) * factor;
-}
-
-export function toUnixTime(value: string | Date = new Date()): number {
-  return Math.floor(new Date(value).getTime() / 1000);
-}
-
-export function numberToByteArray(value: number, bytesNumber = 4): number[] {
-  var byteArray = new Array(bytesNumber).fill(0);
-
-  for (var index = byteArray.length - 1; index >= 0; index--) {
-    var byte = value & 0xff;
-    byteArray[index] = byte;
-    value = (value - byte) / 256;
-  }
-
-  return byteArray;
-}
-
-export function byteArrayToNumber(byteArray: number[]): number {
-  var value = 0;
-  for (var i = byteArray.length - 1; i >= 0; i--) {
-    value = value * 256 + byteArray[i];
-  }
-
-  return value;
-}
 
 export async function getBalances() {
   const users = await ethers.getSigners();
@@ -159,7 +127,7 @@ export async function attempt(fn: () => Promise<any>, attempts = 3, delayMs = 10
   }
 }
 
-export async function waitForTx(
+export async function waitTx(
   promise: Promise<ContractTransaction>,
   functionName?: string,
   attempts = 3,
@@ -193,4 +161,12 @@ export async function waitForTx(
     attempts,
     delayMs,
   );
+}
+
+export function getNetworkName(hre: HardhatRuntimeEnvironment): keyof DeployNetworks {
+  const {
+    network: { name },
+  } = hre;
+
+  return name as keyof DeployNetworks;
 }

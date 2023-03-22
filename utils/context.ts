@@ -1,3 +1,4 @@
+import { getNetworkName } from "common";
 import {
   ACCOUNTS,
   CAR_BAR_CONTRACT_NAME,
@@ -6,25 +7,13 @@ import {
   USDT_CONTRACT_NAME,
 } from "constants/addresses";
 import { ethers, upgrades } from "hardhat";
+import { HardhatRuntimeEnvironment } from "hardhat/types";
 import { ContextBase } from "test/types";
 import { CarBarContract } from "typechain-types/contracts/CarBarContract";
 import { TestUSDT } from "typechain-types/contracts/TestUSDT";
 import { CarBarContract__factory } from "typechain-types/factories/contracts/CarBarContract__factory";
 import { TestUSDT__factory } from "typechain-types/factories/contracts/TestUSDT__factory";
-import { Addresses, DeployNetworks, Users } from "types/common";
-
-export async function getUsers(): Promise<Users> {
-  const [owner, user1, user2, shop, superOwner, owner2] = await ethers.getSigners();
-
-  return {
-    owner,
-    user1,
-    user2,
-    shop,
-    superOwner,
-    owner2,
-  };
-}
+import { Addresses, DeployNetworks, Users } from "types";
 
 export function getAddresses(network: keyof DeployNetworks): Addresses {
   const carBarAddress = CONTRACTS.CAR_BAR[network];
@@ -37,9 +26,25 @@ export function getAddresses(network: keyof DeployNetworks): Addresses {
   };
 }
 
+export function getAddressesFromHre(hre: HardhatRuntimeEnvironment) {
+  return getAddresses(getNetworkName(hre));
+}
+
+export async function getUsers(): Promise<Users> {
+  const [owner, user1, user2, shop, superOwner, owner2] = await ethers.getSigners();
+  return {
+    owner,
+    user1,
+    user2,
+    shop,
+    superOwner,
+    owner2,
+  };
+}
+
 export async function getCarBarContext(
   users: Users,
-  createObj?: { superOwnerAddress: string; usdtAddress: string } | string,
+  createObj: { superOwnerAddress: string; usdtAddress: string } | string,
 ) {
   const { owner, user1, user2, shop, superOwner, owner2 } = users;
 

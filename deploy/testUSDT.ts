@@ -1,7 +1,7 @@
+import { callWithTimerHre, verifyContract } from "common";
 import { USDT_CONTRACT_NAME } from "constants/addresses";
 import { DeployFunction } from "hardhat-deploy/types";
-import { callWithTimerHre, verifyContract } from "utils/common";
-import { getUsdtContext, getUsers } from "utils/context";
+import { getUsdtContext, getUsers } from "utils";
 
 const func: DeployFunction = async (hre): Promise<void> => {
   await callWithTimerHre(async () => {

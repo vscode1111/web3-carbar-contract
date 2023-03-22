@@ -1,7 +1,7 @@
 import appRoot from "app-root-path";
+import { callWithTimerHre } from "common";
 import fs from "fs";
 import { DeployFunction } from "hardhat-deploy/types";
-import { callWithTimerHre } from "utils/common";
 
 import { JSON_DICTIONARY } from "./deployData";
 

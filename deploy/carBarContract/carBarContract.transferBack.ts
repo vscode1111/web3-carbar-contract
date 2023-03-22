@@ -1,12 +1,11 @@
+import { callWithTimerHre, waitTx } from "common";
 import { CAR_BAR_CONTRACT_NAME } from "constants/addresses";
 import { DeployFunction } from "hardhat-deploy/types";
 import { HardhatRuntimeEnvironment } from "hardhat/types";
 import { seedData } from "seeds/seedData";
-import { callWithTimerHre, waitForTx } from "utils/common";
-import { getCarBarContext, getUsers } from "utils/context";
+import { getAddressesFromHre, getCarBarContext, getUsers } from "utils";
 
 import { deployData } from "../deployData";
-import { getAddressesFromHre } from "../utils";
 
 const func: DeployFunction = async (hre: HardhatRuntimeEnvironment): Promise<void> => {
   await callWithTimerHre(async () => {
@@ -16,7 +15,7 @@ const func: DeployFunction = async (hre: HardhatRuntimeEnvironment): Promise<voi
     const { user1 } = users;
     const { user1CarBarContract } = await getCarBarContext(await getUsers(), carBarAddress);
 
-    await waitForTx(
+    await waitTx(
       user1CarBarContract.safeTransferFrom(
         user1.address,
         superOwnerAddress,

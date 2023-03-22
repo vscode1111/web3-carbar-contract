@@ -1,11 +1,9 @@
+import { callWithTimerHre, verifyContract } from "common";
 import { CAR_BAR_CONTRACT_NAME } from "constants/addresses";
 import { upgrades } from "hardhat";
 import { DeployFunction } from "hardhat-deploy/types";
 import { HardhatRuntimeEnvironment } from "hardhat/types";
-import { callWithTimerHre, verifyContract } from "utils/common";
-import { getCarBarContext, getUsers } from "utils/context";
-
-import { getAddressesFromHre } from "../utils";
+import { getAddressesFromHre, getCarBarContext, getUsers } from "utils";
 
 const func: DeployFunction = async (hre: HardhatRuntimeEnvironment): Promise<void> => {
   await callWithTimerHre(async () => {

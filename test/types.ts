@@ -1,7 +1,7 @@
 import { BigNumber } from "ethers";
 import { CarBarContract } from "typechain-types/contracts/CarBarContract";
 import { TestUSDT } from "typechain-types/contracts/TestUSDT";
-import { Users } from "types/common";
+import { Users } from "types";
 
 type Fixture<T> = () => Promise<T>;
 

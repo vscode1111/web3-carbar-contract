@@ -1,4 +1,4 @@
-import { toUnixTime } from "utils/common";
+import { toUnixTime } from "common";
 
 import { IMetadata } from "./types";
 

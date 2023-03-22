@@ -5,6 +5,12 @@ export interface DeployNetworks {
   polygon: string;
 }
 
+export interface Addresses {
+  carBarAddress: string;
+  superOwnerAddress: string;
+  usdtAddress: string;
+}
+
 export interface Users {
   owner: SignerWithAddress;
   user1: SignerWithAddress;
@@ -12,12 +18,6 @@ export interface Users {
   shop: SignerWithAddress;
   superOwner: SignerWithAddress;
   owner2: SignerWithAddress;
-}
-
-export interface Addresses {
-  carBarAddress: string;
-  superOwnerAddress: string;
-  usdtAddress: string;
 }
 
 export type StringNumber = string | number;

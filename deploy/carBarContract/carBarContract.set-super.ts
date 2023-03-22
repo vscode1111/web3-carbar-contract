@@ -1,10 +1,8 @@
+import { callWithTimerHre, waitTx } from "common";
 import { CAR_BAR_CONTRACT_NAME } from "constants/addresses";
 import { DeployFunction } from "hardhat-deploy/types";
 import { HardhatRuntimeEnvironment } from "hardhat/types";
-import { callWithTimerHre, waitForTx } from "utils/common";
-import { getCarBarContext, getUsers } from "utils/context";
-
-import { getAddressesFromHre } from "../utils";
+import { getAddressesFromHre, getCarBarContext, getUsers } from "utils";
 
 const func: DeployFunction = async (hre: HardhatRuntimeEnvironment): Promise<void> => {
   await callWithTimerHre(async () => {
@@ -12,7 +10,7 @@ const func: DeployFunction = async (hre: HardhatRuntimeEnvironment): Promise<voi
     console.log(`${CAR_BAR_CONTRACT_NAME} ${carBarAddress} giving super owner...`);
     const { superOwnerCarBarContract } = await getCarBarContext(await getUsers(), carBarAddress);
 
-    await waitForTx(
+    await waitTx(
       superOwnerCarBarContract.giveSuperOwnerPermissionToOwner(1),
       "giveSuperOwnerPermissionToOwner",
     );

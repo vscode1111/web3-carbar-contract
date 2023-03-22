@@ -15,7 +15,6 @@ describe(CAR_BAR_CONTRACT_NAME, function () {
   });
 
   beforeEach(async function () {
-    // console.log(111, this.currentTest?.parent?.title, this.currentTest?.title);
     const {
       owner,
       user1,
