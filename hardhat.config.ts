@@ -16,8 +16,12 @@ dotenvConfig({
   path: resolve(__dirname, dotenvConfigPath),
 });
 
-function getChainConfig(chain: keyof DeployNetworks): NetworkUserConfig & { url?: string } {
+function getChainConfig(
+  chain: keyof DeployNetworks,
+  chainId?: number,
+): NetworkUserConfig & { url?: string } {
   return {
+    chainId,
     url: getEnv(`${chain.toUpperCase()}_PROVIDER_URL`),
     accounts: [
       `0x${getEnv("OWNER_PRIVATE_KEY")}`,
@@ -30,15 +34,27 @@ function getChainConfig(chain: keyof DeployNetworks): NetworkUserConfig & { url?
   };
 }
 
-const defaultNetwork: keyof DeployNetworks = "polygon";
+// export const defaultNetwork: keyof DeployNetworks = "polygon";
+export const defaultNetwork: keyof DeployNetworks = "okc";
 
 const config: HardhatUserConfig = {
   defaultNetwork,
   etherscan: {
     apiKey: {
-      polygon: getEnv("POLYGONSCAN_API_KEY"),
-      opera: getEnv("OPERASCAN_API_KEY"),
+      polygon: getEnv("POLYGON_SCAN_API_KEY"),
+      opera: getEnv("OPERA_SCAN_API_KEY"),
+      okc: getEnv("OKC_SCAN_API_KEY"),
     },
+    customChains: [
+      {
+        network: "okc",
+        chainId: 66,
+        urls: {
+          apiURL: "https://www.oklink.com/oklink-api",
+          browserURL: "https://www.oklink.com",
+        },
+      },
+    ],
   },
   gasReporter: {
     currency: "USD",
@@ -61,6 +77,7 @@ const config: HardhatUserConfig = {
     },
     opera: getChainConfig("opera"),
     polygon: getChainConfig("polygon"),
+    okc: getChainConfig("okc", 66),
   },
   paths: {
     artifacts: "./artifacts",

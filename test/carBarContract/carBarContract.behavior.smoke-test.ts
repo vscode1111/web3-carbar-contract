@@ -1,7 +1,6 @@
 import { expect } from "chai";
-import { attempt, errorHandler, getNow, waitTx } from "common";
-import { getUSDTDecimalsFactor } from "deploy/utils";
-import { seedData } from "seeds/seedData";
+import { attempt, errorHandler, getNow, toNumberDecimals, waitTx } from "common";
+import { seedData } from "seeds";
 import { ContextBase } from "test/types";
 import { CarBarContract, TokenSoldEvent } from "typechain-types/contracts/CarBarContract";
 
@@ -17,7 +16,7 @@ export async function smokeTest(that: ContextBase) {
   await user1BuysToken(that);
   await user1TransfersToken(that);
   await user2TransfersBackToken(that);
-  await onwerTransfersToken(that);
+  await ownerTransfersToken(that);
   await shopTransfersTokens(that);
   await ownerUpdatesCollection(that);
   await ownerUpdatesToken(that);
@@ -155,7 +154,7 @@ export async function user2TransfersBackToken(that: ContextBase) {
   );
 }
 
-export async function onwerTransfersToken(that: ContextBase) {
+export async function ownerTransfersToken(that: ContextBase) {
   console.log(labels.onwerTransfersToken);
   let tokens = await that.ownerCarBarContract.fetchTokens(seedData.collectionId0);
   const user1TokenCount0 = findTokenCount(tokens, that.user1.address);
@@ -327,8 +326,6 @@ export async function superOwnerWithdraws(that: ContextBase) {
   const carBarAmount0 = await that.ownerTestUSDT.balanceOf(that.ownerCarBarContract.address);
   const user1Amount0 = await that.ownerTestUSDT.balanceOf(that.user1.address);
 
-  const factor = await getUSDTDecimalsFactor(that.ownerTestUSDT);
-
   await waitTx(
     that.superOwnerCarBarContract.withdraw(that.user1.address, carBarAmount0),
     "withdraw",
@@ -336,7 +333,12 @@ export async function superOwnerWithdraws(that: ContextBase) {
     seedData.delayMs,
   );
 
-  console.log(`${carBarAmount0.toNumber() / factor} USDT was withdrawed to ${that.user1.address}`);
+  console.log(
+    `${toNumberDecimals(
+      carBarAmount0,
+      await that.ownerTestUSDT.decimals(),
+    )} USDT was withdrawed to ${that.user1.address}`,
+  );
 
   await attempt(
     async function () {
@@ -394,8 +396,6 @@ export async function ownerWithdrawsWithPermission(that: ContextBase) {
 
   expect(carBarAmount0).greaterThan(0);
 
-  const factor = await getUSDTDecimalsFactor(that.ownerTestUSDT);
-
   await waitTx(
     that.ownerCarBarContract.withdraw(that.user1.address, carBarAmount0),
     "withdraw",
@@ -403,7 +403,7 @@ export async function ownerWithdrawsWithPermission(that: ContextBase) {
     seedData.delayMs,
   );
 
-  console.log(`${carBarAmount0.toNumber() / factor} USDT was withdrawed to ${that.user1.address}`);
+  console.log(`${toNumberDecimals(carBarAmount0, await that.ownerTestUSDT.decimals())} USDT price`);
 
   await attempt(
     async () => {
@@ -492,7 +492,7 @@ export function shouldBehaveCorrectSmokeTest(): void {
     });
 
     it(labels.onwerTransfersToken, async function () {
-      await onwerTransfersToken(this);
+      await ownerTransfersToken(this);
     });
 
     it(labels.shopTransfersToken, async function () {

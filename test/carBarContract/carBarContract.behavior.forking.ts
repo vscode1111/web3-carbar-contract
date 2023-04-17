@@ -11,7 +11,6 @@ export function shouldBehaveCorrectForking(): void {
     it("incident: buy token of collection #1 in 38747028 block", async function () {
       // const provider = new ethers.providers.JsonRpcProvider(process.env.PROVIDER_URL);
       // const latestBlock = await provider.getBlock("latest");
-      // console.log(111, latestBlock);
 
       const collectionId = 1;
 

@@ -13,11 +13,7 @@ const func: DeployFunction = async (hre: HardhatRuntimeEnvironment): Promise<voi
     const { ownerCarBarContract } = await getCarBarContext(await getUsers(), carBarAddress);
 
     await waitTx(
-      ownerCarBarContract.updateToken(
-        deployData.collectionId,
-        deployData.tokenId,
-        deployData.today,
-      ),
+      ownerCarBarContract.updateToken(deployData.collectionId, deployData.tokenId, deployData.now),
       "updateToken",
     );
 

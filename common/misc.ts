@@ -1,14 +1,10 @@
-import { BigNumber, BigNumberish } from "ethers";
-import { ethers } from "hardhat";
+import { BigNumber } from "ethers";
 import _ from "lodash";
-import { StringNumber } from "types";
 
-export function toWei(value: StringNumber, unitName?: BigNumberish): BigNumber {
-  return ethers.utils.parseUnits(String(value), unitName);
-}
+import { toNumber } from "./converts";
 
-export function toNumber(value: BigNumber, factor = 1): number {
-  return Number(ethers.utils.formatEther(value)) * factor;
+export function printBigNumber(value: BigNumber, factor = 1, fractionDigits = 3): string {
+  return toNumber(value, factor).toFixed(fractionDigits);
 }
 
 export function toUnixTime(value: string | Date = new Date()): number {

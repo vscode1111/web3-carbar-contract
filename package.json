@@ -12,6 +12,7 @@
     "deploy:accounts": "hardhat deploy --tags accounts",
     "deploy:tusdt": "hardhat deploy --tags TestUSDT",
     "deploy:proxy": "hardhat deploy --tags CarBarContract:proxy",
+    "deploy:proxy2": "hardhat deploy --tags PaymentContract:proxy",
     "deploy:init": "hardhat deploy --tags CarBarContract:init",
     "deploy:fetch": "hardhat deploy --tags CarBarContract:fetch",
     "deploy:upgrade": "hardhat deploy --tags CarBarContract:upgrade",
@@ -37,7 +38,7 @@
     "format": "prettier --config ./.prettierrc.yml --write \"**/*.{js,json,md,sol,ts,yml}\"",
     "format:check": "prettier --check --config ./.prettierrc.yml \"**/*.{js,json,md,sol,ts,yml}\"",
     "test": "hardhat test --network hardhat",
-    "unit-test": "mocha -r ts-node/register 'utils/**/*spec.ts'",
+    "unit-test": "mocha -r ts-node/register 'common/**/*spec.ts'",
     "typechain": "cross-env TS_NODE_TRANSPILE_ONLY=true hardhat typechain"
   },
   "devDependencies": {

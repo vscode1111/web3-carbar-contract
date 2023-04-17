@@ -1,17 +1,26 @@
 import { toUnixTime, toWei } from "common";
 import dayjs from "dayjs";
-import { JSON_DICTIONARY } from "deploy/deployData";
+import { jsonDictionary } from "deploy/deployData";
 import { BigNumber } from "ethers";
+import { DeployNetworks } from "types";
 
+import { defaultNetwork } from "../hardhat.config";
 import { ICollectionItem } from "./types";
 
-const PROD_DATA = true;
+export const PROD_PRICE = false;
+export const PROD_DATA = false;
 
 export const TOKEN_COUNT = 101;
 
-export const TUSDT_DECIMALS = 6;
+const chainDecimals: Record<keyof DeployNetworks, number> = {
+  opera: 6,
+  polygon: 6,
+  okc: 18,
+};
 
-const PRICE_DIV = BigNumber.from(PROD_DATA ? "1" : "1000");
+export const TUSDT_DECIMALS = chainDecimals[defaultNetwork];
+
+const PRICE_DIV = BigNumber.from(PROD_PRICE ? "1" : "1000");
 
 export const seedData = {
   collectionCount: 3,
@@ -50,19 +59,19 @@ export function getCollections(
 ): ICollectionItem[] {
   return [
     {
-      name: JSON_DICTIONARY[0].name,
+      name: jsonDictionary[0].name,
       tokenCount,
       price: seedData.price0,
       expiryDate,
     },
     {
-      name: JSON_DICTIONARY[1].name,
+      name: jsonDictionary[1].name,
       tokenCount,
       price: seedData.price1,
       expiryDate,
     },
     {
-      name: JSON_DICTIONARY[2].name,
+      name: jsonDictionary[2].name,
       tokenCount,
       price: seedData.price2,
       expiryDate,

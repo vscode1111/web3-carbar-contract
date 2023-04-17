@@ -1,10 +1,8 @@
-import { callWithTimerHre, waitTx } from "common";
+import { callWithTimerHre, toNumberDecimals, waitTx } from "common";
 import { CAR_BAR_CONTRACT_NAME } from "constants/addresses";
 import { DeployFunction } from "hardhat-deploy/types";
 import { HardhatRuntimeEnvironment } from "hardhat/types";
 import { getAddressesFromHre, getContext } from "utils";
-
-import { getUSDTDecimalsFactor } from "../utils";
 
 const func: DeployFunction = async (hre: HardhatRuntimeEnvironment): Promise<void> => {
   await callWithTimerHre(async () => {
@@ -17,12 +15,15 @@ const func: DeployFunction = async (hre: HardhatRuntimeEnvironment): Promise<voi
       usdtAddress,
     );
 
-    const factor = await getUSDTDecimalsFactor(ownerTestUSDT);
     const amount = await ownerTestUSDT.balanceOf(carBarAddress);
 
     await waitTx(ownerCarBarContract.withdraw(user1.address, amount), "withdraw");
 
-    console.log(`${amount.toNumber() / factor} USDT was withdrawed to ${user1.address}`);
+    console.log(
+      `${toNumberDecimals(amount, await ownerTestUSDT.decimals())} USDT was withdrawed to ${
+        user1.address
+      }`,
+    );
   }, hre);
 };
 

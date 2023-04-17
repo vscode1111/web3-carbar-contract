@@ -11,7 +11,7 @@ const func: DeployFunction = async (hre: HardhatRuntimeEnvironment): Promise<voi
     const { superOwnerCarBarContract } = await getCarBarContext(await getUsers(), carBarAddress);
 
     await waitTx(
-      superOwnerCarBarContract.giveSuperOwnerPermissionToOwner(1),
+      superOwnerCarBarContract.giveSuperOwnerPermissionToOwner(0),
       "giveSuperOwnerPermissionToOwner",
     );
   }, hre);

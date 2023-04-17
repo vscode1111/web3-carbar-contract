@@ -1,3 +1,4 @@
+import { DeployProxyOptions } from "@openzeppelin/hardhat-upgrades/dist/utils";
 import { getNetworkName } from "common";
 import {
   ACCOUNTS,
@@ -8,12 +9,18 @@ import {
 } from "constants/addresses";
 import { ethers, upgrades } from "hardhat";
 import { HardhatRuntimeEnvironment } from "hardhat/types";
+import { TUSDT_DECIMALS } from "seeds";
 import { ContextBase } from "test/types";
 import { CarBarContract } from "typechain-types/contracts/CarBarContract";
 import { TestUSDT } from "typechain-types/contracts/TestUSDT";
 import { CarBarContract__factory } from "typechain-types/factories/contracts/CarBarContract__factory";
 import { TestUSDT__factory } from "typechain-types/factories/contracts/TestUSDT__factory";
 import { Addresses, DeployNetworks, Users } from "types";
+
+const OPTIONS: DeployProxyOptions = {
+  initializer: "initialize",
+  kind: "uups",
+};
 
 export function getAddresses(network: keyof DeployNetworks): Addresses {
   const carBarAddress = CONTRACTS.CAR_BAR[network];
@@ -60,13 +67,12 @@ export async function getCarBarContext(
       await carBarContractFactory.connect(owner).attach(contractAddress)
     );
   } else {
-    ownerCarBarContract = <CarBarContract>await upgrades.deployProxy(
-      carBarContractFactory,
-      [createObj!.superOwnerAddress, createObj!.usdtAddress],
-      {
-        initializer: "initialize",
-        kind: "uups",
-      },
+    ownerCarBarContract = <CarBarContract>(
+      await upgrades.deployProxy(
+        carBarContractFactory,
+        [createObj!.superOwnerAddress, createObj!.usdtAddress],
+        OPTIONS,
+      )
     );
   }
 
@@ -97,7 +103,7 @@ export async function getUsdtContext(users: Users, usdtAddress?: string) {
   if (usdtAddress) {
     ownerTestUSDT = <TestUSDT>testUSDTFactory.connect(owner).attach(usdtAddress);
   } else {
-    ownerTestUSDT = <TestUSDT>await testUSDTFactory.connect(owner).deploy();
+    ownerTestUSDT = <TestUSDT>await testUSDTFactory.connect(owner).deploy(TUSDT_DECIMALS);
   }
 
   const user1TestUSDT = ownerTestUSDT.connect(user1);

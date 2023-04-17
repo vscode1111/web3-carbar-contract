@@ -3,7 +3,7 @@ import { callWithTimerHre } from "common";
 import fs from "fs";
 import { DeployFunction } from "hardhat-deploy/types";
 
-import { JSON_DICTIONARY } from "./deployData";
+import { jsonDictionary } from "./deployData";
 
 const func: DeployFunction = async (): Promise<void> => {
   await callWithTimerHre(async () => {
@@ -15,7 +15,7 @@ const func: DeployFunction = async (): Promise<void> => {
       });
     }
 
-    Object.entries(JSON_DICTIONARY).forEach(([key, value]) => {
+    Object.entries(jsonDictionary).forEach(([key, value]) => {
       fs.writeFileSync(`${dir}/${key}.json`, JSON.stringify(value, null, 2));
     });
   });

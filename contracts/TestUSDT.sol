@@ -6,13 +6,17 @@ import "@openzeppelin/contracts/token/ERC20/extensions/ERC20Burnable.sol";
 import "@openzeppelin/contracts/access/Ownable.sol";
 
 contract TestUSDT is ERC20, ERC20Burnable, Ownable {
-    constructor() ERC20("Mumbai Test USDT", "tUSDT") {}
+    uint8 _decimals;
+
+    constructor(uint8 decimals_) ERC20("Mumbai Test USDT", "tUSDT") {
+        _decimals = decimals_;
+    }
 
     function mint(address to, uint256 amount) public onlyOwner {
         _mint(to, amount);
     }
 
-    function decimals() public pure override returns (uint8) {
-        return 6;
+    function decimals() public view override returns (uint8) {
+        return _decimals;
     }
 }

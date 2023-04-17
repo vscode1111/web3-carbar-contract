@@ -1,15 +1,18 @@
 import { toUnixTime } from "common";
+import { PROD_DATA } from "seeds/seedData";
 
-import { IMetadata } from "./types";
+import { ContractData, JsonMetadata } from "./types";
+
+export const isVerify = false;
 
 export const deployData = {
   collectionId: 0,
   tokenId: 0,
-  today: toUnixTime(),
+  now: toUnixTime(),
   nullAddress: "0x0000000000000000000000000000000000000000",
 };
 
-export const JSON_DICTIONARY: Record<string | number, IMetadata> = {
+const jsonDictionaryProd: Record<string | number, JsonMetadata> = {
   contract: {
     name: `carbar.io v1`,
     banner: "https://carbar.io/nft/banner.png",
@@ -44,3 +47,44 @@ export const JSON_DICTIONARY: Record<string | number, IMetadata> = {
     Please note: to obtain a car, the driver must meet certain requirements. The rental company will also require a refundable deposit. See all the details and service terms in our FAQ.`,
   },
 };
+
+const jsonDictionaryTest: Record<string | number, JsonMetadata> = {
+  contract: {
+    name: `test contract`,
+    banner: "https://test_contract_banner",
+    image: "https://test_image_banner",
+    description: `contract description`,
+  },
+  //Collections
+  0: {
+    name: "collection 0",
+    image: "https://collection_01.png",
+    description: `collection 0 description`,
+  },
+  1: {
+    name: "collection 1",
+    image: "https://collection_1.png",
+    description: `collection 1 description`,
+  },
+  2: {
+    name: "collection 2",
+    image: "https://collection_2.png",
+    description: `collection 2 description`,
+  },
+};
+
+export const jsonDictionary = PROD_DATA ? jsonDictionaryProd : jsonDictionaryTest;
+
+const contractDataProd: ContractData = {
+  name: "carbar.io v1",
+  symbol: "carbar",
+  uri: "https://carbar.io/nft_json/cr1/",
+};
+
+const contractDataTest: ContractData = {
+  name: "test v1",
+  symbol: "test",
+  uri: "https://test.com/",
+};
+
+export const contractData = PROD_DATA ? contractDataProd : contractDataTest;
