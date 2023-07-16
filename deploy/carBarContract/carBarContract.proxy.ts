@@ -4,7 +4,7 @@ import { DeployFunction } from "hardhat-deploy/types";
 import { HardhatRuntimeEnvironment } from "hardhat/types";
 import { getAddressesFromHre, getCarBarContext, getUsers } from "utils";
 
-import { isVerify } from "../deployData";
+import { verifyRequired } from "../deployData";
 
 const func: DeployFunction = async (hre: HardhatRuntimeEnvironment): Promise<void> => {
   await callWithTimerHre(async () => {
@@ -18,7 +18,7 @@ const func: DeployFunction = async (hre: HardhatRuntimeEnvironment): Promise<voi
     });
     await ownerCarBarContract.deployed();
     console.log(`${CAR_BAR_CONTRACT_NAME} deployed to ${ownerCarBarContract.address}`);
-    if (isVerify) {
+    if (verifyRequired) {
       await verifyContract(ownerCarBarContract.address, hre);
       console.log(
         `${CAR_BAR_CONTRACT_NAME} deployed and verified to ${ownerCarBarContract.address}`,

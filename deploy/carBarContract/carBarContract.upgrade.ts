@@ -5,7 +5,7 @@ import { DeployFunction } from "hardhat-deploy/types";
 import { HardhatRuntimeEnvironment } from "hardhat/types";
 import { getAddressesFromHre, getCarBarContext, getUsers } from "utils";
 
-import { isVerify } from "../deployData";
+import { verifyRequired } from "../deployData";
 
 const func: DeployFunction = async (hre: HardhatRuntimeEnvironment): Promise<void> => {
   await callWithTimerHre(async () => {
@@ -14,7 +14,7 @@ const func: DeployFunction = async (hre: HardhatRuntimeEnvironment): Promise<voi
     const { carBarContractFactory } = await getCarBarContext(await getUsers(), carBarAddress);
     await upgrades.upgradeProxy(carBarAddress, carBarContractFactory);
     console.log(`${CAR_BAR_CONTRACT_NAME} upgraded to ${carBarAddress}`);
-    if (isVerify) {
+    if (verifyRequired) {
       await verifyContract(carBarAddress, hre);
       console.log(`${CAR_BAR_CONTRACT_NAME} upgraded and verified to ${carBarAddress}`);
     }

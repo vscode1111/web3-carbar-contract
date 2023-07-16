@@ -20,7 +20,7 @@ export async function initCollections(carBarContract: CarBarContract, collection
 export async function initCollectionsReal(
   carBarContract: CarBarContract,
   tokenCount = TOKEN_COUNT,
-  expiryDate = seedData.endTime2023,
+  expiryDate = seedData.endTime2024,
 ) {
   const collections = getCollections(tokenCount, expiryDate);
 
@@ -38,7 +38,7 @@ export async function initCollectionsRealWithBuying(
   that: Context,
   tokenCount = 3,
   collectionId = 0,
-  expiryDate = seedData.endTime2023,
+  expiryDate = seedData.endTime2024,
 ) {
   await that.ownerTestUSDT.mint(that.user1.address, seedData.userInitialBalance0);
   await that.user1TestUSDT.approve(that.ownerCarBarContract.address, seedData.price01);

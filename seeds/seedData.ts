@@ -40,7 +40,7 @@ export const seedData = {
   userInitialBalance2: toWei(3000, TUSDT_DECIMALS).div(PRICE_DIV),
   userInitialBalance01: toWei(1000 + 2000, TUSDT_DECIMALS).div(PRICE_DIV),
   userInitialBalance012: toWei(1000 + 2000 + 3000, TUSDT_DECIMALS).div(PRICE_DIV),
-  endTime2023: toUnixTime("2023-05-31 23:59:59"),
+  endTime2024: toUnixTime("2024-05-31 23:59:59"),
   emptyData: [],
   today: toUnixTime(),
   todayMinus1m: toUnixTime(dayjs().add(-1, "minute").toDate()),
@@ -55,7 +55,7 @@ export const seedData = {
 
 export function getCollections(
   tokenCount = TOKEN_COUNT,
-  expiryDate = seedData.endTime2023,
+  expiryDate = seedData.endTime2024,
 ): ICollectionItem[] {
   return [
     {

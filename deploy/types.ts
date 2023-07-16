@@ -1,3 +1,5 @@
+//TODO: remove it and update common folder from petocontract
+
 export interface JsonMetadata {
   name: string;
   image: string;
@@ -8,5 +10,5 @@ export interface JsonMetadata {
 export interface ContractData {
   name: string;
   symbol: string;
-  uri: string;
+  uri?: string;
 }

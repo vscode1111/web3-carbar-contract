@@ -3,7 +3,7 @@ import { PROD_DATA } from "seeds/seedData";
 
 import { ContractData, JsonMetadata } from "./types";
 
-export const isVerify = false;
+export const verifyRequired = false;
 
 export const deployData = {
   collectionId: 0,
